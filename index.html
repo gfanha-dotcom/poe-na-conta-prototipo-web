@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Põe na Conta — v0.17 • Piloto Online</title>
+<title>Põe na Conta — v0.17.1 • Piloto Online</title>
 <style>
   :root{
     --bg:#f4f6f8;
@@ -848,7 +848,7 @@
         </div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-light" onclick="closeModal('newClientModal')">Cancelar</button><button class="btn btn-primary" onclick="saveNewClient()">Cadastrar cliente</button></div>
+    <div class="modal-footer"><button class="btn btn-light" onclick="closeModal('newClientModal')">Cancelar</button><button class="btn btn-primary" onclick="saveNewClientOnlineV0171()">Cadastrar cliente</button></div>
   </div>
 </div>
 
@@ -2753,8 +2753,13 @@ async function loadMerchantContext(session){
 }
 
 async function createMovementOnline(clientId,type,amount,note='',ref=null,description='',extra={}){
-  if(!sbClient||!onlineContext.establishmentId||!onlineContext.userId){notify('Sem conexão com o servidor.');return null}
-  const c=getClient(clientId);if(!c){notify('Cliente não encontrado.');return null}
+  if(!sbClient||!onlineContext.establishmentId||!onlineContext.userId){
+    alert('Sem conexão confirmada com o servidor.');
+    return null;
+  }
+  const c=getClient(clientId);
+  if(!c){notify('Cliente não encontrado.');return null}
+
   const id=(crypto.randomUUID?crypto.randomUUID():('00000000-0000-4000-8000-'+Date.now().toString().padStart(12,'0').slice(-12)));
   const direction=(type==='charge'||type==='opening')?'debit':'credit';
   const payload={
@@ -2771,16 +2776,30 @@ async function createMovementOnline(clientId,type,amount,note='',ref=null,descri
     reversed_movement_id:type==='reversal'&&ref?ref:null,
     created_by:onlineContext.userId
   };
+
   setOnlineChip('● Salvando');
-  const {data:row,error}=await sbClient.from('movements').insert(payload).select().single();
-  if(error){console.error(error);setOnlineChip('● Online');notify('Não foi possível salvar o lançamento no servidor. Nada foi confirmado.');return null}
-  const m=mapServerMovement(row,{});m.photo=extra.photo||null;
+  const {error}=await sbClient.from('movements').insert(payload);
+
+  if(error){
+    console.error('Erro Supabase ao salvar movimentação:',error);
+    setOnlineChip('● Erro ao salvar');
+    alert('A movimentação NÃO foi gravada no servidor.\n\nErro do Supabase: '+(error.message||error.code||'erro não identificado'));
+    return null;
+  }
+
+  const m=mapServerMovement({...payload,created_at:new Date().toISOString()},{});
+  m.photo=extra.photo||null;
+  data.movements=data.movements.filter(x=>x.id!==id);
   data.movements.push(m);
+
   const action=type==='charge'?'LANÇAMENTO':type==='payment'?'PAGAMENTO':type==='opening'?'SALDO DE ABERTURA':'ESTORNO';
   addAudit(action,`${money(amount)} • ${c.name}${description?` • ${description}`:''}${ref?` • referência ${ref}`:''}`);
-  reevaluateAutoBlock(c,true);save();renderAll();setOnlineChip('● Online');return m;
+  reevaluateAutoBlock(c,true);
+  save();
+  renderAll();
+  setOnlineChip('● Online');
+  return m;
 }
-
 async function quickAdd(){
   if(quickLock)return;
   const c=getClient(data.selectedClientId),amount=parseMoneyInput(document.getElementById('quickAmount').value),description=(document.getElementById('quickDescription').value||'').trim(),btn=document.getElementById('quickAddBtn');
@@ -2828,24 +2847,75 @@ async function confirmReversal(){
   document.getElementById('reversalModalFooter').innerHTML='<button class="btn btn-primary" onclick="finishReversal()">Fechar</button>';reversalState=null;save();renderAll();
 }
 
-async function saveNewClient(){
-  const name=document.getElementById('newName').value.trim();if(!name){notify('Informe o nome.');return}
-  const mode=document.getElementById('newLimitMode').value,limit=mode==='fixed'?parseMoneyInput(document.getElementById('newLimit').value):null;if(mode==='fixed'&&limit<=0){notify('Informe o limite do fiado.');return}
+async function saveNewClientOnlineV0171(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){notify('Informe o nome.');return}
+
+  if(!sbClient||!onlineContext.establishmentId||!onlineContext.userId){
+    alert('Não foi possível confirmar a conexão com o servidor. Saia e entre novamente no Põe na Conta.');
+    return;
+  }
+
+  const mode=document.getElementById('newLimitMode').value;
+  const limit=mode==='fixed'?parseMoneyInput(document.getElementById('newLimit').value):null;
+  if(mode==='fixed'&&limit<=0){notify('Informe o limite do fiado.');return}
+
   const openingBalance=parseMoneyInput(document.getElementById('newOpeningBalance').value);
   const id=(crypto.randomUUID?crypto.randomUUID():('00000000-0000-4000-8000-'+Date.now().toString().padStart(12,'0').slice(-12)));
-  const payload={id,establishment_id:onlineContext.establishmentId,name,nickname:document.getElementById('newNickname').value.trim()||null,phone:document.getElementById('newPhone').value.trim()||null,customer_user_id:null,limit_mode:mode,credit_limit:mode==='fixed'?centsToServerMoney(limit):null,blocked:false,blocked_reason:null,due_day:5,invite_status:'none',created_by:onlineContext.userId};
+
+  const payload={
+    id,
+    establishment_id:onlineContext.establishmentId,
+    name,
+    nickname:document.getElementById('newNickname').value.trim()||null,
+    phone:document.getElementById('newPhone').value.trim()||null,
+    customer_user_id:null,
+    limit_mode:mode,
+    credit_limit:mode==='fixed'?centsToServerMoney(limit):null,
+    blocked:false,
+    blocked_reason:null,
+    due_day:5,
+    invite_status:'none',
+    created_by:onlineContext.userId
+  };
+
   setOnlineChip('● Salvando');
-  const {data:row,error}=await sbClient.from('clients').insert(payload).select().single();
-  if(error){console.error(error);setOnlineChip('● Online');notify('Não foi possível cadastrar o cliente no servidor.');return}
-  const c=mapServerClient(row);data.clients.push(c);save();renderAll();
+  const {error}=await sbClient.from('clients').insert(payload);
+
+  if(error){
+    console.error('Erro Supabase ao cadastrar cliente:',error);
+    setOnlineChip('● Erro ao salvar');
+    alert('O cliente NÃO foi gravado no servidor.\n\nErro do Supabase: '+(error.message||error.code||'erro não identificado'));
+    return;
+  }
+
+  // Só entra na tela depois que o INSERT foi aceito pelo servidor.
+  const now=new Date().toISOString();
+  const c=mapServerClient({...payload,created_at:now,updated_at:now});
+  data.clients=data.clients.filter(x=>x.id!==id);
+  data.clients.push(c);
+  save();
+  renderAll();
+
   if(openingBalance>0){
     const opening=await createMovementOnline(c.id,'opening',openingBalance,'Saldo devedor inicial informado no cadastro',null,'');
-    if(opening)c.openingMode='informed';else notify('Cliente criado, mas o saldo inicial não foi salvo. Tente lançar o valor pela conta do cliente.');
+    if(opening)c.openingMode='informed';
+    else alert('O cliente foi criado no servidor, mas o saldo inicial não foi confirmado. Faça o lançamento depois pela conta do cliente.');
   }
-  addAudit('CLIENTE CRIADO',`${c.name} • sem app • ${c.limitMode==='free'?'sem limite':'limite do fiado '+money(c.limit)}${openingBalance>0?' • saldo inicial '+money(openingBalance):''}.`);save();renderAll();closeModal('newClientModal');
-  ['newName','newNickname','newPhone','newLimit','newOpeningBalance'].forEach(id=>document.getElementById(id).value='');document.getElementById('newLimitMode').value='free';toggleNewLimit();setOnlineChip('● Online');notify(`${c.name} cadastrado online.`);
-}
 
+  addAudit('CLIENTE CRIADO',`${c.name} • sem app • ${c.limitMode==='free'?'sem limite':'limite do fiado '+money(c.limit)}${openingBalance>0?' • saldo inicial '+money(openingBalance):''}.`);
+  save();
+  renderAll();
+  closeModal('newClientModal');
+
+  ['newName','newNickname','newPhone','newLimit','newOpeningBalance'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value='';
+  });
+  document.getElementById('newLimitMode').value='free';
+  toggleNewLimit();
+  setOnlineChip('● Online');
+  notify(`${c.name} cadastrado no servidor.`);
+}
 async function toggleBlock(id){
   const c=getClient(id);if(!c)return;const newValue=!c.manualBlocked;
   const {error}=await sbClient.from('clients').update({blocked:newValue,blocked_reason:newValue?'manual':null}).eq('id',id).eq('establishment_id',onlineContext.establishmentId);
@@ -2883,6 +2953,9 @@ upgradeDataV07();
 renderAll();
 if(data.selectedClientId)selectQuick(data.selectedClientId);
 initOnlineAccess();
+
+console.info('Põe na Conta — build v0.17.1 — gravação online corrigida');
+window.__PNC_BUILD = '0.17.1';
 </script>
 
 </body>
