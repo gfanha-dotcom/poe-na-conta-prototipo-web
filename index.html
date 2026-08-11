@@ -1,0 +1,3077 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Põe na Conta — v0.17.2 • Piloto Online + WhatsApp</title>
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --text:#15202b;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --primary:#0f766e;
+    --primary-2:#0d9488;
+    --danger:#b42318;
+    --warn:#b54708;
+    --ok:#067647;
+    --shadow:0 10px 30px rgba(16,24,40,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .app{min-height:100vh}
+  header{
+    position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar{max-width:1280px;margin:auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;color:white;font-weight:900;font-size:20px;box-shadow:var(--shadow)}
+  .brand h1{font-size:18px;margin:0;line-height:1}
+  .brand small{display:block;color:var(--muted);margin-top:5px}
+  .top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;color:#344054;font-size:13px}
+  .container{max-width:1280px;margin:auto;padding:22px 18px 40px}
+  .notice{
+    background:#fff8e6;border:1px solid #f3d58c;color:#7a4b00;border-radius:14px;padding:12px 14px;margin-bottom:18px;font-size:13px
+  }
+  .nav{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-bottom:18px}
+  .nav button{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#475467;border-radius:12px;padding:10px 14px;font-weight:700}
+  .nav button.active{background:var(--text);color:#fff;border-color:var(--text)}
+  .view{display:none}.view.active{display:block}
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card-pad{padding:18px}
+  .kpi .label{font-size:13px;color:var(--muted);font-weight:700}
+  .kpi .value{font-size:28px;font-weight:900;margin-top:8px;letter-spacing:-.5px}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .main-grid{grid-template-columns:1.25fr .75fr;margin-top:16px}
+  .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .section-title h2{font-size:17px;margin:0}
+  .section-title p{font-size:13px;color:var(--muted);margin:4px 0 0}
+  .searchbox{display:flex;gap:10px}
+  .searchbox input,.form-row input,.form-row select{
+    width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fff;outline:none
+  }
+  .searchbox input:focus,.form-row input:focus,.form-row select:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(15,118,110,.08)}
+  .btn{border:none;border-radius:12px;padding:11px 14px;font-weight:800}
+  .btn-primary{background:var(--primary);color:white}
+  .btn-dark{background:#101828;color:#fff}
+  .btn-light{background:#f2f4f7;color:#344054}
+  .btn-danger{background:#fee4e2;color:#912018}
+  .btn-warn{background:#fff4e5;color:#93370d}
+  .btn-small{padding:8px 10px;font-size:12px}
+  .client-list{display:grid;gap:8px;margin-top:14px}
+  .client{
+    border:1px solid var(--line);border-radius:14px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff
+  }
+  .client:hover{border-color:#b8c0cc}
+  .client-left{display:flex;align-items:center;gap:12px;min-width:0}
+  .avatar{width:42px;height:42px;border-radius:50%;background:#eef4f3;color:var(--primary);display:grid;place-items:center;font-weight:900;flex:0 0 auto}
+  .client h3{margin:0;font-size:14px}
+  .client small{color:var(--muted)}
+  .money{font-weight:900}
+  .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800}
+  .status.ok{background:#ecfdf3;color:var(--ok)}
+  .status.warn{background:#fffaeb;color:var(--warn)}
+  .status.block{background:#fef3f2;color:var(--danger)}
+  .quick-box{padding:18px;background:linear-gradient(180deg,var(--primary),var(--primary-2));color:#fff}
+  .quick-box h2{margin:0 0 4px;font-size:20px}
+  .quick-box p{margin:0 0 16px;color:#d5f5f0;font-size:13px}
+  .quick-selected{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px;margin-bottom:12px}
+  .quick-selected strong{display:block}
+  .quick-box input{width:100%;border:none;border-radius:14px;padding:15px;font-size:24px;font-weight:900;margin-bottom:10px;text-align:center}
+  .big-add{width:100%;background:#fff;color:var(--primary);border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:950}
+  .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .quick-receive{width:100%;background:rgba(16,24,40,.88);color:#fff;border:1px solid rgba(255,255,255,.24);border-radius:14px;padding:15px;font-size:15px;font-weight:900}
+  .quick-receive:disabled{opacity:.48;cursor:not-allowed}
+  @media(max-width:520px){.quick-actions{grid-template-columns:1fr}.quick-receive{padding:13px}}
+  .hint{font-size:11px;color:#cde9e6;text-align:center;margin-top:8px}
+  .table-wrap{overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:760px}
+  th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+  th{color:#667085;font-size:11px;text-transform:uppercase;letter-spacing:.04em;background:#fafafa}
+  td strong{font-size:13px}
+  .right{text-align:right}
+  .positive{color:var(--danger);font-weight:900}
+  .negative{color:var(--ok);font-weight:900}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar input,.toolbar select{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(16,24,40,.5);z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
+  .modal-backdrop.show{display:flex}
+  .modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(16,24,40,.3)}
+  .modal-head{padding:18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .modal-head h3{margin:0}
+  .modal-body{padding:18px}
+  .modal-footer{padding:16px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .close{border:none;background:#f2f4f7;width:36px;height:36px;border-radius:10px;font-weight:900}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form-row{display:grid;gap:6px}
+  .form-row label{font-size:12px;font-weight:800;color:#475467}
+  .span-2{grid-column:1/-1}
+  .detail-hero{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fafafa;margin-bottom:14px}
+  .detail-hero .big{font-size:30px;font-weight:950}
+  .activity{display:grid;gap:10px}
+  .activity-item{display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#98a2b3;margin-top:5px;flex:0 0 auto}
+  .security-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .security-item{padding:16px}
+  .security-item h3{font-size:14px;margin:0 0 6px}
+  .security-item p{font-size:13px;color:var(--muted);margin:0}
+  .backup{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;margin-top:10px}
+  .backup strong{display:block}
+  .client-app{max-width:420px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);overflow:hidden}
+  .client-head{background:#101828;color:#fff;padding:22px}
+  .client-head small{color:#d0d5dd}
+  .client-total{font-size:34px;font-weight:950;margin-top:10px}
+  .store-card{padding:15px;border-bottom:1px solid var(--line)}
+  .store-card .row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .toast{position:fixed;right:18px;bottom:18px;z-index:80;background:#101828;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);display:none;max-width:360px}
+  .toast.show{display:block}
+  .empty{text-align:center;color:var(--muted);padding:24px;font-size:13px}
+  .mini-note{font-size:12px;color:var(--muted);margin-top:8px}
+  .divider{height:1px;background:var(--line);margin:16px 0}
+  @media(max-width:980px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .main-grid,.security-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:620px){
+    .topbar{align-items:flex-start}
+    .top-actions .chip:nth-child(1){display:none}
+    .container{padding:14px 12px 28px}
+    .kpis{grid-template-columns:1fr 1fr;gap:10px}
+    .kpi .value{font-size:22px}
+    .form-grid{grid-template-columns:1fr}
+    .span-2{grid-column:auto}
+    .detail-hero{align-items:flex-start;flex-direction:column}
+    .searchbox{flex-direction:column}
+  }
+
+  .confirm-box{
+    display:none;margin-top:12px;background:#ecfdf3;border:1px solid #abefc6;color:#05603a;
+    border-radius:14px;padding:14px
+  }
+  .confirm-box.show{display:block}
+  .whatsapp-action{
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .btn-whatsapp{
+    border:0;
+    border-radius:12px;
+    padding:11px 14px;
+    font-weight:900;
+    background:#16a34a;
+    color:#fff;
+  }
+  .btn-whatsapp:hover{filter:brightness(.97)}
+  .confirm-title{font-size:15px;font-weight:950}
+  .confirm-main{font-size:22px;font-weight:950;margin:4px 0}
+  .confirm-meta{font-size:12px;color:#067647;line-height:1.5}
+  .limit-alert{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    border:1px solid #fedf89;background:#fffaeb;border-radius:14px;padding:12px 14px;margin-top:10px
+  }
+  .limit-alert.danger{border-color:#fecdca;background:#fef3f2}
+  .internal-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;background:#f2f4f7;color:#475467}
+  .info-strip{border-radius:12px;padding:10px 12px;background:#f8fafc;border:1px solid var(--line);font-size:12px;color:#475467;margin-top:10px}
+  .big-add:disabled{cursor:not-allowed}
+
+
+  .reversal-warning{
+    border:1px solid #fecdca;background:#fef3f2;border-radius:16px;padding:15px;margin-bottom:14px
+  }
+  .reversal-warning h4{margin:0 0 8px;color:#912018;font-size:15px}
+  .reversal-line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #f4c7c3;font-size:13px}
+  .reversal-line:last-child{border-bottom:none}
+  .reversal-success{
+    text-align:center;border:1px solid #abefc6;background:#ecfdf3;border-radius:18px;padding:22px
+  }
+  .reversal-success .icon{font-size:36px;line-height:1}
+  .reversal-success h3{margin:10px 0 4px;color:#05603a}
+  .reversal-success .amount{font-size:28px;font-weight:950;color:#05603a;margin:8px 0}
+  .reversal-success p{margin:5px 0;color:#067647;font-size:13px}
+
+
+  .brand-logo-img{width:44px;height:44px;border-radius:14px;object-fit:cover;display:none}
+  .theme-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .theme-option{width:42px;height:42px;border-radius:12px;border:3px solid transparent;cursor:pointer}
+  .theme-option.active{outline:3px solid #d0d5dd;outline-offset:2px}
+  .logo-preview{width:82px;height:82px;border-radius:18px;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;background:#f8fafc;font-weight:900;font-size:24px;color:var(--primary)}
+  .logo-preview img{width:100%;height:100%;object-fit:cover}
+  .store-list{display:grid;gap:10px;padding:14px}
+  .customer-store{
+    width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left
+  }
+  .customer-store.active{border-color:var(--primary);box-shadow:0 0 0 2px rgba(15,118,110,.08)}
+  .store-ident{display:flex;align-items:center;gap:10px;min-width:0}
+  .store-logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;overflow:hidden;flex:0 0 auto}
+  .store-logo img{width:100%;height:100%;object-fit:cover}
+  .store-detail-head{padding:16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafafa}
+  .store-detail-head .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .store-detail-title{display:flex;align-items:center;gap:10px}
+  .client-tabs{display:flex;gap:8px;padding:14px;border-bottom:1px solid var(--line)}
+  .client-tabs button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:12px}
+  .client-tabs button.active{background:#101828;color:#fff;border-color:#101828}
+
+
+  /* v0.10 — referências com foto para comerciante e cliente */
+  .quick-box .quick-desc{font-size:14px;font-weight:650;text-align:left;padding:12px 13px;margin-bottom:10px}
+  .balance-state{display:inline-flex;align-items:center;gap:6px;font-weight:900}
+  .balance-state.debt{color:#b42318}.balance-state.credit{color:#067647}.balance-state.zero{color:#475467}
+  .quick-box .balance-state{color:#fff}
+  .ref-photo{width:54px;height:54px;border-radius:10px;object-fit:cover;border:1px solid var(--line);display:block}
+  .photo-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .subtle-action{border:0;background:transparent;color:#475467;text-decoration:underline;text-underline-offset:3px;padding:4px 0;font-size:12px;font-weight:750}
+  .profile-choice{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+  .profile-choice.active{border-color:var(--primary);background:#f8fffe}
+  .qr-demo{width:190px;height:190px;display:grid;grid-template-columns:repeat(17,1fr);gap:1px;padding:8px;background:#fff;border:1px solid var(--line);margin:12px auto;border-radius:12px}
+  .qr-demo span{background:#101828;border-radius:1px}.qr-demo span.off{background:#fff}
+  .invite-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fafafa}
+  .description-pill{display:inline-flex;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:999px;background:#f2f4f7;color:#344054;padding:5px 9px;font-size:11px;font-weight:800}
+  .movement-value{display:flex;flex-direction:column;align-items:flex-end;gap:1px;white-space:nowrap}
+  .movement-value .movement-effect{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+  .movement-value .movement-amount{font-size:13px;font-weight:900}
+  .movement-reference{min-width:118px}
+  .movement-actions{white-space:nowrap}
+  .photo-preview-large{max-width:100%;max-height:65vh;border-radius:16px;border:1px solid var(--line)}
+  .client-sell-link{margin-top:12px;text-align:center}
+  .client-sell-link button{border:0;background:transparent;color:#667085;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:750;padding:6px}
+  .split-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .split-info>div{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fafafa}
+  .split-info small{display:block;color:var(--muted);margin-bottom:4px}
+  @media(max-width:620px){.split-info{grid-template-columns:1fr}.qr-demo{width:170px;height:170px}}
+
+  .quick-photo-area{margin:2px 0 12px;display:grid;gap:8px}
+  .quick-photo-btn{width:100%;border:1px dashed rgba(255,255,255,.55);background:rgba(255,255,255,.10);color:#fff;border-radius:13px;padding:11px 13px;font-weight:850;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+  .quick-photo-btn:hover{background:rgba(255,255,255,.16)}
+  .quick-photo-btn:disabled{opacity:.55;cursor:not-allowed}
+  .quick-photo-preview{display:none;align-items:center;gap:10px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);border-radius:13px;padding:9px 10px;color:#fff}
+  .quick-photo-preview.show{display:flex}
+  .quick-photo-thumb{width:54px;height:54px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.45);flex:0 0 auto}
+  .quick-photo-meta{min-width:0;flex:1;text-align:left}
+  .quick-photo-meta strong{display:block;font-size:12px}
+  .quick-photo-meta span{display:block;font-size:11px;opacity:.85;margin-top:2px}
+  .quick-photo-remove{border:0;background:transparent;color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:11px;font-weight:800;padding:5px;cursor:pointer}
+
+
+  /* v0.12 — identidade visual do estabelecimento também na visão do cliente */
+  .customer-store.brand-card{
+    border-left:6px solid var(--store-color);
+    background:var(--store-tint);
+  }
+  .customer-store.brand-card:hover{filter:brightness(.99)}
+  .store-detail-head.brand-theme{
+    color:#fff;
+    border-top:0;
+    border-bottom:0;
+    background:var(--store-color);
+  }
+  .store-detail-head.brand-theme .mini-note,
+  .store-detail-head.brand-theme .money,
+  .store-detail-head.brand-theme strong{color:#fff}
+  .store-detail-head.brand-theme .store-logo{
+    background:rgba(255,255,255,.18)!important;
+    border:1px solid rgba(255,255,255,.3);
+  }
+  .store-card.brand-movement{border-left:4px solid var(--store-color)}
+  .client-store-ident{display:flex;align-items:center;gap:8px}
+  .client-store-ident .store-logo{width:32px;height:32px;border-radius:9px;font-size:11px}
+  .brand-note{font-size:11px;opacity:.9;margin-top:3px}
+
+
+
+  /* ===== v0.17 — piloto com dados operacionais online ===== */
+  .online-chip{
+    color:#067647;
+    background:#ecfdf3;
+    border-color:#abefc6;
+    font-weight:800;
+  }
+  @media(max-width:620px){
+    .topbar{
+      align-items:center;
+      padding:10px 12px;
+      gap:8px;
+    }
+    .brand{
+      min-width:0;
+      gap:9px;
+      flex:1;
+    }
+    .logo,.brand-logo-img{
+      width:40px!important;
+      height:40px!important;
+      border-radius:12px!important;
+      flex:0 0 40px;
+    }
+    .brand>div:last-child{
+      min-width:0;
+    }
+    .brand h1{
+      font-size:17px;
+      white-space:nowrap;
+    }
+    .brand small{
+      margin-top:3px;
+      font-size:12px;
+      max-width:150px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .top-actions{
+      flex:0 0 auto;
+      gap:6px;
+      flex-wrap:nowrap;
+    }
+    #profileChip{
+      max-width:190px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      padding:8px 10px;
+      font-size:12px;
+    }
+    #syncChip{
+      display:none;
+    }
+    .container{
+      padding-top:12px;
+    }
+    .nav{
+      gap:5px;
+      margin-bottom:10px;
+      padding-bottom:3px;
+      scrollbar-width:thin;
+    }
+    .nav button{
+      padding:7px 10px;
+      min-height:34px;
+      border-radius:10px;
+      font-size:12.5px;
+      line-height:1.05;
+      font-weight:800;
+    }
+  }
+
+  /* ===== v0.17 — Acesso + dados operacionais online ===== */
+  .app{display:none}
+  .app.auth-ready{display:block}
+  .auth-gate{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:22px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(15,118,110,.12), transparent 34%),
+      var(--bg);
+  }
+  .auth-card{
+    width:min(440px,100%);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:0 24px 70px rgba(16,24,40,.14);
+    overflow:hidden;
+  }
+  .auth-brand{
+    padding:24px 22px 18px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    border-bottom:1px solid var(--line);
+  }
+  .auth-logo{
+    width:52px;height:52px;border-radius:16px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    color:#fff;font-size:20px;font-weight:950;
+  }
+  .auth-brand h1{margin:0;font-size:22px}
+  .auth-brand p{margin:5px 0 0;color:var(--muted);font-size:13px}
+  .auth-body{padding:22px}
+  .auth-panel{display:none}
+  .auth-panel.active{display:block}
+  .auth-panel h2{font-size:19px;margin:0 0 5px}
+  .auth-panel>p{font-size:13px;color:var(--muted);margin:0 0 17px;line-height:1.5}
+  .auth-field{display:grid;gap:6px;margin-top:12px}
+  .auth-field label{font-size:12px;font-weight:850;color:#475467}
+  .auth-field input{
+    width:100%;border:1px solid var(--line);border-radius:13px;
+    padding:13px 14px;background:#fff;outline:none;font-size:16px
+  }
+  .auth-field input:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(15,118,110,.10)}
+  .auth-primary{
+    width:100%;margin-top:16px;border:0;border-radius:13px;padding:13px 14px;
+    background:var(--primary);color:#fff;font-weight:900
+  }
+  .auth-primary:disabled{opacity:.55;cursor:not-allowed}
+  .auth-link{
+    width:100%;border:0;background:transparent;color:#475467;
+    margin-top:10px;padding:8px;font-weight:750;text-decoration:underline;text-underline-offset:3px
+  }
+  .auth-message{
+    display:none;margin-top:13px;border-radius:12px;padding:11px 12px;
+    font-size:13px;line-height:1.45
+  }
+  .auth-message.show{display:block}
+  .auth-message.info{background:#f8fafc;border:1px solid #e2e8f0;color:#344054}
+  .auth-message.ok{background:#ecfdf3;border:1px solid #abefc6;color:#05603a}
+  .auth-message.error{background:#fef3f2;border:1px solid #fecdca;color:#912018}
+  .auth-state-icon{
+    width:58px;height:58px;border-radius:18px;background:#f2f4f7;
+    display:grid;place-items:center;font-size:27px;margin-bottom:14px
+  }
+  .auth-meta{
+    margin-top:14px;padding:12px;border-radius:13px;background:#fafafa;
+    border:1px solid var(--line);font-size:12px;color:#475467;line-height:1.5
+  }
+  .auth-footer{
+    padding:13px 18px;border-top:1px solid var(--line);
+    text-align:center;color:var(--muted);font-size:11px
+  }
+  @media(max-width:520px){
+    .auth-gate{padding:12px;align-items:flex-start;padding-top:34px}
+    .auth-card{border-radius:20px}
+  }
+
+</style>
+</head>
+<body>
+<!-- Põe na Conta v0.17.2 — Piloto • clientes e movimentações online + WhatsApp assistido -->
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo">PC</div>
+      <div>
+        <h1>Põe na Conta</h1>
+        <p>Acesso do comerciante</p>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      <section class="auth-panel active" id="authLoadingPanel">
+        <div class="auth-state-icon">⏳</div>
+        <h2>Conectando...</h2>
+        <p>Validando seu acesso ao Põe na Conta.</p>
+      </section>
+
+      <section class="auth-panel" id="authLoginPanel">
+        <h2>Entrar</h2>
+        <p>Use o e-mail que recebeu o convite do Põe na Conta. Não há cadastro livre nesta versão.</p>
+
+        <div class="auth-field">
+          <label for="authEmail">E-mail</label>
+          <input id="authEmail" type="email" autocomplete="email" placeholder="seuemail@exemplo.com">
+        </div>
+        <div class="auth-field">
+          <label for="authPassword">Senha</label>
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="Sua senha">
+        </div>
+
+        <button class="auth-primary" id="authLoginBtn" type="button" onclick="loginOnline()">ENTRAR</button>
+        <button class="auth-link" type="button" onclick="requestPasswordReset()">Esqueci minha senha</button>
+        <div class="auth-message" id="authLoginMessage" aria-live="polite"></div>
+      </section>
+
+      <section class="auth-panel" id="authPasswordPanel">
+        <div class="auth-state-icon">🔐</div>
+        <h2 id="authPasswordTitle">Criar sua senha</h2>
+        <p id="authPasswordText">Defina os dados do seu acesso.</p>
+
+        <div class="auth-field" id="authNameField">
+          <label for="authDisplayName">Seu nome</label>
+          <input id="authDisplayName" type="text" autocomplete="name" placeholder="Ex.: Priscilla Fanha">
+        </div>
+        <div class="auth-field">
+          <label for="authNewPassword">Nova senha</label>
+          <input id="authNewPassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
+        </div>
+        <div class="auth-field">
+          <label for="authConfirmPassword">Confirmar senha</label>
+          <input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Repita a senha">
+        </div>
+
+        <button class="auth-primary" id="authPasswordBtn" type="button" onclick="finishPasswordSetup()">SALVAR E CONTINUAR</button>
+        <div class="auth-message" id="authPasswordMessage" aria-live="polite"></div>
+      </section>
+
+      <section class="auth-panel" id="authPendingPanel">
+        <div class="auth-state-icon">🕓</div>
+        <h2>Acesso aguardando liberação</h2>
+        <p>Seu login existe, mas ainda não foi vinculado a um estabelecimento do Põe na Conta.</p>
+        <div class="auth-meta" id="authPendingMeta"></div>
+        <button class="auth-link" type="button" onclick="logoutOnline()">Sair desta conta</button>
+      </section>
+
+      <section class="auth-panel" id="authBlockedPanel">
+        <div class="auth-state-icon">⛔</div>
+        <h2>Acesso bloqueado</h2>
+        <p id="authBlockedText">Este estabelecimento está bloqueado para acesso.</p>
+        <button class="auth-link" type="button" onclick="logoutOnline()">Sair desta conta</button>
+      </section>
+
+      <section class="auth-panel" id="authErrorPanel">
+        <div class="auth-state-icon">⚠️</div>
+        <h2>Não foi possível conectar</h2>
+        <p id="authErrorText">Verifique sua internet e tente novamente.</p>
+        <button class="auth-primary" type="button" onclick="location.reload()">TENTAR NOVAMENTE</button>
+      </section>
+    </div>
+
+    <div class="auth-footer">
+      Acesso seguro • Põe na Conta
+    </div>
+  </div>
+</div>
+
+<div class="app" id="merchantApp">
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" id="brandLogoFallback">PC</div><img id="brandLogoImg" class="brand-logo-img" alt="Logo do estabelecimento">
+      <div>
+        <h1>Põe na Conta</h1>
+        <small id="storeName">Meu negócio</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="chip" id="privacyBtn" onclick="togglePrivacy()" style="cursor:pointer">👁 Ocultar saldos</button>
+      <button class="chip" id="profileChip" type="button" onclick="openProfileModal()" style="cursor:pointer">👤 Usuário • Comerciante ▾</button>
+      <span class="chip online-chip" id="syncChip">● Online</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="nav">
+    <button class="active" data-view="dashboard">Põe na Conta</button>
+    <button data-view="finance">Financeiro</button>
+    <button data-view="clients">Clientes</button>
+    <button data-view="movements">Movimentações</button>
+    <button data-view="references">Referências</button>
+    <button data-view="storeconfig">Meu negócio</button>
+    <button data-view="security">Segurança & Backup</button>
+  </div>
+
+  
+  <section class="view active" id="dashboard">
+    <div class="card quick-box" style="margin-bottom:16px">
+      <h2>Põe na Conta</h2>
+      <p>Escolha o cliente e coloque na conta.</p>
+
+      <div class="quick-selected" id="quickSelected">
+        <strong>Escolha um cliente</strong>
+        <span>Toque em um nome da lista abaixo.</span>
+      </div>
+
+      <input id="quickAmount" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" />
+      <input id="quickDescription" class="quick-desc" maxlength="120" placeholder="Descrição (opcional) — ex.: Produto tal, serviço tal" />
+      <div class="quick-photo-area">
+        <button class="quick-photo-btn" id="quickPhotoBtn" type="button" onclick="triggerQuickPhoto()">📷 FOTO DA ANOTAÇÃO <span style="font-weight:650;opacity:.85">(opcional)</span></button>
+        <div class="quick-photo-preview" id="quickPhotoPreview">
+          <img class="quick-photo-thumb" id="quickPhotoThumb" alt="Prévia da foto da anotação" />
+          <div class="quick-photo-meta"><strong>Foto pronta</strong><span>A foto vai ficar junto deste lançamento.</span></div>
+          <button class="quick-photo-remove" type="button" onclick="removeQuickPhoto()">Remover</button>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button class="big-add" id="quickAddBtn" onclick="quickAdd()">PÕE NA CONTA</button>
+        <button class="quick-receive" id="quickReceiveBtn" type="button" onclick="quickReceivePayment()" disabled>RECEBER PAGAMENTO</button>
+      </div>
+
+      <div class="confirm-box" id="quickConfirmation"></div>
+      <div class="hint">Aqui entra só o valor final do fiado.</div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-title">
+        <div><h2>Clientes</h2><p>Escolha quem comprou e informe o valor.</p></div>
+        <button class="btn btn-light btn-small" onclick="openNewClient()">+ Novo cliente</button>
+      </div>
+      <div class="searchbox">
+        <input id="quickSearch" placeholder="Buscar cliente..." oninput="renderQuickClients()" />
+      </div>
+      <div class="client-list" id="quickClients"></div>
+    </div>
+  </section>
+
+
+  
+  <section class="view" id="finance">
+    <div class="grid kpis">
+      <div class="card card-pad kpi"><div class="label">FIADO A RECEBER</div><div class="value" id="kpiReceivable">R$ 0,00</div><div class="sub">Total que seus clientes têm na conta</div></div>
+      <div class="card card-pad kpi"><div class="label">RECEBI ESTE MÊS</div><div class="value" id="kpiReceived">R$ 0,00</div><div class="sub">Pagamentos recebidos</div></div>
+      <div class="card card-pad kpi"><div class="label">CLIENTES COM FIADO</div><div class="value" id="kpiWithBalance">0</div><div class="sub">Clientes que têm valor na conta</div></div>
+      <div class="card card-pad kpi"><div class="label">EM ATRASO</div><div class="value" id="kpiOverdue">R$ 0,00</div><div class="sub">Simulação do protótipo</div></div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px">
+      <div class="section-title">
+        <div>
+          <h2>Alertas de limite</h2>
+          <p>O limite é uma informação do seu negócio e não aparece para o cliente.</p>
+        </div>
+        <div class="form-row" style="min-width:180px">
+          <label>Me avise quando chegar a</label>
+          <select id="limitAlertPct" onchange="changeLimitAlertPct()">
+            <option value="70">70%</option>
+            <option value="80">80%</option>
+            <option value="90">90%</option>
+            <option value="100">100%</option>
+          </select>
+        </div>
+      </div>
+      <div id="limitAlerts"></div>
+      <div class="info-strip">🔒 O limite do fiado fica visível somente para o estabelecimento.</div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px">
+      <div class="section-title">
+        <div><h2>Resumo do negócio</h2><p>Aqui você acompanha os valores dos seus clientes.</p></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cliente</th><th>Saldo</th><th>Saldo inicial</th><th>Limite do fiado</th><th>Quanto do limite já usou</th><th>Situação</th></tr></thead>
+          <tbody id="financeClientsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="clients">
+    <div class="card card-pad">
+      <div class="section-title">
+        <div><h2>Clientes</h2><p>O fiado é pessoal e fica vinculado ao cliente.</p></div>
+        <button class="btn btn-primary" onclick="openNewClient()">+ Novo cliente</button>
+      </div>
+      <div class="toolbar">
+        <input id="clientSearch" placeholder="Buscar cliente..." oninput="renderClients()" />
+        <select id="clientFilter" onchange="renderClients()">
+          <option value="all">Todos</option>
+          <option value="balance">Com fiado</option>
+          <option value="blocked">Bloqueados</option>
+          <option value="connected">Com app</option>
+          <option value="traditional">Sem app</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Limite do fiado</th><th>Situação</th><th class="right">Fiado / haver</th><th></th></tr></thead><tbody id="clientsBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="view" id="movements">
+    <div class="card card-pad">
+      <div class="section-title"><div><h2>Movimentações</h2><p>Nenhum lançamento financeiro é apagado. Correções são feitas por estorno.</p></div></div>
+      <div class="toolbar">
+        <input id="movementSearch" placeholder="Buscar cliente..." oninput="renderMovements()" />
+        <select id="movementType" onchange="renderMovements()">
+          <option value="all">Todos os tipos</option>
+          <option value="charge">Lançamentos</option>
+          <option value="payment">Pagamentos</option>
+          <option value="reversal">Estornos</option>
+          <option value="opening">Saldo inicial</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Data/hora</th><th>Cliente</th><th>Tipo</th><th>Descrição</th><th>Responsável</th><th>Forma / referência</th><th>Anexo</th><th class="right">Valor</th><th class="right">Ações</th></tr></thead><tbody id="movementsBody"></tbody></table></div>
+    </div>
+  </section>
+
+
+  <section class="view" id="references">
+    <div class="card card-pad">
+      <div class="section-title">
+        <div><h2>Referências</h2><p>Aqui você encontra as descrições e fotos dos lançamentos.</p></div>
+      </div>
+      <div class="toolbar">
+        <input id="referenceSearch" placeholder="O que você procura?" oninput="renderReferences()" style="min-width:280px" />
+        <input id="referenceClientSearch" placeholder="Filtrar cliente..." oninput="renderReferences()" />
+      </div>
+      <div class="info-strip">Você pode buscar mesmo digitando só parte do nome ou com pequenas diferenças de escrita.</div>
+      <div class="table-wrap" style="margin-top:12px">
+        <table><thead><tr><th>Data/hora</th><th>Cliente</th><th>Descrição</th><th>Foto</th><th class="right">Valor</th></tr></thead><tbody id="referencesBody"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="clientapp" hidden aria-hidden="true">
+    <div class="section-title">
+      <div><h2>Minha conta</h2><p>Acompanhe seu fiado, pagamentos e referências.</p></div>
+      <select id="clientPreviewSelect" onchange="selectedClientStoreId=null;clientViewMode='general';renderClientApp()" style="border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></select>
+    </div>
+
+    <div class="client-app">
+      <div class="client-head">
+        <small>Olá, <span id="previewName">cliente</span></small>
+        <div style="margin-top:10px;color:#d0d5dd;font-size:13px">MEU FIADO</div>
+        <div class="client-total" id="previewTotal">R$ 0,00</div>
+      </div>
+
+      <div class="client-tabs">
+        <button id="clientGeneralTab" class="active" type="button" onclick="setClientView('general')">Minhas contas</button>
+        <button id="clientLocalTab" type="button" onclick="setClientView('local')">Por comércio</button>
+        <button id="clientReferencesTab" type="button" onclick="setClientView('references')">Referências</button>
+      </div>
+
+      <div id="clientGeneralView">
+        <div class="store-list" id="previewStoreList"></div>
+      </div>
+
+      <div id="clientLocalView" style="display:none">
+        <div id="previewStoreDetail"></div>
+      </div>
+
+      <div id="clientReferencesView" style="display:none;padding:14px">
+        <div class="toolbar" style="padding:0 0 10px">
+          <input id="clientReferenceSearch" placeholder="Buscar referência... ex.: natura, natur" oninput="renderClientReferences()" />
+        </div>
+        <div class="info-strip">Veja as descrições e fotos das suas compras anotadas.</div>
+        <div class="table-wrap" style="margin-top:10px">
+          <table><thead><tr><th>Data</th><th>Comércio</th><th>Descrição</th><th>Foto</th><th class="right">Valor</th></tr></thead><tbody id="clientReferencesBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="client-sell-link"><button type="button" onclick="openSellModal()">Quero vender fiado</button></div>
+  </section>
+
+  
+  <section class="view" id="storeconfig">
+    <div class="card card-pad">
+      <div class="section-title">
+        <div>
+          <h2>Aparência do meu negócio</h2>
+          <p>Coloque sua logo e escolha a cor do seu negócio.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-row span-2">
+          <label>Nome do negócio</label>
+          <input id="storeDisplayName" placeholder="Nome do seu negócio" />
+        </div>
+
+        <div class="form-row span-2">
+          <label>Logo ou foto</label>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <div class="logo-preview" id="storeLogoPreview">BJ</div>
+            <div style="display:grid;gap:8px">
+              <input id="storeLogoInput" type="file" accept="image/*" onchange="handleStoreLogo(event)" />
+              <button class="btn btn-light btn-small" type="button" onclick="removeStoreLogo()">Remover logo</button>
+              <div class="mini-note">No sistema real serão definidos limite de tamanho e formatos aceitos.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row span-2">
+          <label>Cor do negócio</label>
+          <div class="theme-grid" id="themeGrid">
+            <button class="theme-option" data-theme="teal" type="button" title="Verde" style="background:#0f766e"></button>
+            <button class="theme-option" data-theme="blue" type="button" title="Azul" style="background:#2563eb"></button>
+            <button class="theme-option" data-theme="navy" type="button" title="Azul escuro" style="background:#1e3a8a"></button>
+            <button class="theme-option" data-theme="wine" type="button" title="Vinho" style="background:#9f1239"></button>
+            <button class="theme-option" data-theme="orange" type="button" title="Laranja" style="background:#c2410c"></button>
+            <button class="theme-option" data-theme="purple" type="button" title="Roxo" style="background:#7e22ce"></button>
+            <button class="theme-option" data-theme="darkgray" type="button" title="Cinza escuro" style="background:#374151"></button>
+            <button class="theme-option" data-theme="red" type="button" title="Vermelho" style="background:#b91c1c"></button>
+          </div>
+          <div class="mini-note">Escolha uma das cores disponíveis.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn btn-primary" type="button" onclick="saveStoreBranding()">Salvar aparência</button>
+    </div>
+  </section>
+
+  <section class="view" id="security">
+    <div class="grid security-grid">
+      <div class="card security-item">
+        <h3>🔐 Usuários individuais</h3>
+        <p>Protótipo prevê proprietário, gerente e atendente. No sistema real, cada ação deverá ficar vinculada a um usuário.</p>
+      </div>
+      <div class="card security-item">
+        <h3>🧾 Trilha de auditoria</h3>
+        <p>Criação, pagamento, estorno, limite, bloqueio e exportação devem gerar registro de quem fez e quando.</p>
+      </div>
+      <div class="card security-item">
+        <h3>🛑 Sem exclusão silenciosa</h3>
+        <p>Movimentos financeiros não são apagados. Erros são corrigidos por estorno vinculado ao lançamento original.</p>
+      </div>
+      <div class="card security-item">
+        <h3>🏪 Isolamento por estabelecimento</h3>
+        <p>Um estabelecimento não pode acessar os clientes ou dados de outro estabelecimento. O isolamento será garantido pelo servidor e pelas políticas de acesso.</p>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px">
+      <div class="section-title"><div><h2>Dados & continuidade</h2><p>Situação real desta versão piloto.</p></div></div>
+      <div class="backup"><div><strong>Clientes</strong><span class="mini-note">Base operacional no Supabase</span></div><span class="status ok">● ONLINE</span></div>
+      <div class="backup"><div><strong>Movimentações</strong><span class="mini-note">Lançamentos, pagamentos e estornos</span></div><span class="status ok">● ONLINE</span></div>
+      <div class="backup"><div><strong>Isolamento</strong><span class="mini-note">Cada estabelecimento acessa somente a própria base</span></div><span class="status ok">● ATIVO</span></div>
+      <div class="backup"><div><strong>Fotos das anotações</strong><span class="mini-note">Ainda ficam neste aparelho; envio ao Storage será a próxima etapa</span></div><span class="status warn">LOCAL</span></div>
+      <div class="divider"></div>
+      <div class="toolbar">
+        <button class="btn btn-light" onclick="exportDemo()">Exportar cópia local</button>
+        <button class="btn btn-primary" onclick="refreshOnlineData()">Atualizar dados</button>
+      </div>
+      <div class="mini-note">Clientes e movimentações são carregados do servidor após o login. O navegador mantém apenas uma cópia local de apoio e preferências da interface.</div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px">
+      <div class="section-title"><div><h2>Auditoria do protótipo</h2><p>Eventos recentes desta sessão/aparelho. A auditoria online será conectada em etapa própria.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody id="auditBody"></tbody></table></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<div class="modal-backdrop" id="clientModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3 id="clientModalTitle">Cliente</h3><div class="mini-note">Conta pessoal do cliente neste estabelecimento.</div></div>
+      <button class="close" onclick="closeModal('clientModal')">×</button>
+    </div>
+    <div class="modal-body" id="clientModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="newClientModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3>Novo cliente</h3><div class="mini-note">Cadastre só o necessário.</div></div><button class="close" onclick="closeModal('newClientModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row span-2"><label>Nome *</label><input id="newName" placeholder="Ex.: Antônio Pereira" /></div>
+        <div class="form-row"><label>Apelido / referência</label><input id="newNickname" placeholder="Ex.: Seu Toninho" /></div>
+        <div class="form-row"><label>Telefone (opcional)</label><input id="newPhone" placeholder="(41) 99999-9999" /></div>
+        <div class="form-row"><label>Acesso pelo app</label><div class="info-strip" style="margin:0">📒 Cadastre normalmente. Se quiser, depois convide o cliente para acompanhar pelo app.</div></div>
+        <div class="form-row"><label>Limite do fiado</label><select id="newLimitMode" onchange="toggleNewLimit()"><option value="free">Sem limite</option><option value="fixed">Definir limite</option></select></div>
+        <div class="form-row span-2" id="newLimitRow" style="display:none"><label>Valor do limite</label><input id="newLimit" inputmode="decimal" placeholder="R$ 300,00" oninput="formatMoneyInput(this)" /></div>
+        <div class="form-row span-2">
+          <label>Saldo devedor inicial (opcional)</label>
+          <input id="newOpeningBalance" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" />
+          <div class="mini-note">Se ele já está devendo, informe o valor. Se não, deixe em branco.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" onclick="closeModal('newClientModal')">Cancelar</button><button class="btn btn-primary" onclick="saveNewClientOnlineV0171()">Cadastrar cliente</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="actionModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3 id="actionTitle">Ação</h3></div><button class="close" onclick="closeModal('actionModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row span-2"><label>Valor</label><input id="actionAmount" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" /></div>
+        <div class="form-row span-2" id="actionDescriptionRow"><label>Descrição do lançamento (opcional)</label><input id="actionDescription" maxlength="120" placeholder="Ex.: Produto tal, serviço tal" /></div>
+        <div class="form-row span-2" id="actionNoteRow"><label>Como pagou? (opcional)</label><input id="actionNote" placeholder="Ex.: Pix, dinheiro, cartão" /></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" onclick="closeModal('actionModal')">Cancelar</button><button class="btn btn-primary" onclick="confirmAction()">Confirmar</button></div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="reversalModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="reversalModalTitle">Confirmar estorno</h3>
+        <div class="mini-note" id="reversalModalSubtitle">Confira antes de concluir.</div>
+      </div>
+      <button class="close" onclick="closeModal('reversalModal')">×</button>
+    </div>
+    <div class="modal-body" id="reversalModalBody"></div>
+    <div class="modal-footer" id="reversalModalFooter"></div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="inviteModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3>Convidar para acompanhar</h3><div class="mini-note">Seu cliente recebe o convite e escolhe se quer acompanhar pelo app.</div></div><button class="close" onclick="closeModal('inviteModal')">×</button></div>
+    <div class="modal-body" id="inviteModalBody"></div>
+    <div class="modal-footer" id="inviteModalFooter"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="photoModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3>Foto da anotação</h3><div class="mini-note">Referência visual vinculada ao lançamento. Não altera o financeiro.</div></div><button class="close" onclick="closeModal('photoModal')">×</button></div>
+    <div class="modal-body" style="text-align:center"><img id="photoModalImage" class="photo-preview-large" alt="Foto anexada ao lançamento" /></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="profileModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3>Trocar perfil</h3><div class="mini-note">Um único aplicativo e uma única conta.</div></div><button class="close" onclick="closeModal('profileModal')">×</button></div>
+    <div class="modal-body" id="profileModalBody"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="sellModal">
+  <div class="modal">
+    <div class="modal-head"><div><h3>Quero vender fiado</h3><div class="mini-note">Ative o lado de quem recebe sem criar outra conta.</div></div><button class="close" onclick="closeModal('sellModal')">×</button></div>
+    <div class="modal-body" id="sellModalBody"></div>
+    <div class="modal-footer" id="sellModalFooter"></div>
+  </div>
+</div>
+
+<input id="quickPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleQuickPhoto(event)" />
+<input id="movementPhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleMovementPhoto(event)" />
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://rqhtyvhypgtfgesjxuao.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_KZ2J5Gfbg_9JdmB8S8rjvQ_PXleHEcd";
+const INITIAL_AUTH_URL = window.location.href;
+const INITIAL_AUTH_FLOW = /[?&#]type=invite\b/i.test(INITIAL_AUTH_URL)
+  ? 'invite'
+  : (/[?&#]type=recovery\b/i.test(INITIAL_AUTH_URL) || /[?&]mode=recovery\b/i.test(INITIAL_AUTH_URL) ? 'recovery' : null);
+
+const sbClient = (window.supabase && window.supabase.createClient)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    })
+  : null;
+
+let onlineContext = {
+  userId: null,
+  email: null,
+  establishmentId: null,
+  establishmentCode: null,
+  establishmentStatus: null,
+  role: null
+};
+
+const STORE_KEY_BASE = 'poeNaContaPrototypeV016MerchantOnline';
+let STORE_KEY = STORE_KEY_BASE + ':guest';
+
+
+function authRoleLabel(role){
+  return role==='owner'?'Proprietária(o)':role==='manager'?'Gerente':role==='clerk'?'Atendente':'Comerciante';
+}
+
+function showAuthPanel(panelId){
+  document.querySelectorAll('.auth-panel').forEach(p=>p.classList.toggle('active',p.id===panelId));
+}
+
+function setAuthMessage(id,msg,type='info'){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(!msg){
+    el.textContent='';
+    el.className='auth-message';
+    return;
+  }
+  el.textContent=msg;
+  el.className=`auth-message show ${type}`;
+}
+
+function setAuthButtonBusy(id,busy,busyText,normalText){
+  const btn=document.getElementById(id);
+  if(!btn)return;
+  btn.disabled=!!busy;
+  btn.textContent=busy?busyText:normalText;
+}
+
+function cleanAuthUrl(){
+  try{
+    const clean=window.location.origin+window.location.pathname;
+    history.replaceState({},document.title,clean);
+  }catch(e){}
+}
+
+function authFriendlyError(error){
+  const msg=(error?.message||'').toLowerCase();
+  if(msg.includes('invalid login credentials')) return 'E-mail ou senha inválidos.';
+  if(msg.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar.';
+  if(msg.includes('rate limit')) return 'Muitas tentativas. Aguarde um pouco e tente novamente.';
+  if(msg.includes('password')) return 'Não foi possível validar a senha. Confira e tente novamente.';
+  return error?.message||'Não foi possível concluir esta operação.';
+}
+
+async function loginOnline(){
+  if(!sbClient){
+    setAuthMessage('authLoginMessage','Não foi possível carregar a conexão segura com o servidor.','error');
+    return;
+  }
+
+  const email=(document.getElementById('authEmail')?.value||'').trim();
+  const password=document.getElementById('authPassword')?.value||'';
+  if(!email||!password){
+    setAuthMessage('authLoginMessage','Informe e-mail e senha.','error');
+    return;
+  }
+
+  setAuthMessage('authLoginMessage','');
+  setAuthButtonBusy('authLoginBtn',true,'ENTRANDO...','ENTRAR');
+
+  const {data:signData,error}=await sbClient.auth.signInWithPassword({email,password});
+  setAuthButtonBusy('authLoginBtn',false,'ENTRANDO...','ENTRAR');
+
+  if(error){
+    setAuthMessage('authLoginMessage',authFriendlyError(error),'error');
+    return;
+  }
+
+  if(signData?.session) await loadMerchantContext(signData.session);
+}
+
+async function requestPasswordReset(){
+  if(!sbClient)return;
+  const email=(document.getElementById('authEmail')?.value||'').trim();
+  if(!email){
+    setAuthMessage('authLoginMessage','Digite seu e-mail primeiro.','error');
+    return;
+  }
+  if(location.protocol==='file:'){
+    setAuthMessage('authLoginMessage','A recuperação de senha só funciona pela versão online do Põe na Conta.','info');
+    return;
+  }
+
+  const redirectTo=window.location.origin+window.location.pathname+'?mode=recovery';
+  const {error}=await sbClient.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){
+    setAuthMessage('authLoginMessage',authFriendlyError(error),'error');
+    return;
+  }
+  setAuthMessage('authLoginMessage','Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.','ok');
+}
+
+async function showPasswordSetup(flow='invite',session=null){
+  showAuthPanel('authPasswordPanel');
+  setAuthMessage('authPasswordMessage','');
+  document.getElementById('authPasswordTitle').textContent=flow==='recovery'?'Criar nova senha':'Primeiro acesso';
+  document.getElementById('authPasswordText').textContent=flow==='recovery'
+    ? 'Defina uma nova senha para continuar usando o Põe na Conta.'
+    : 'Confirme seu nome e crie a senha que usará para entrar no Põe na Conta.';
+
+  const nameInput=document.getElementById('authDisplayName');
+  if(flow==='recovery'){
+    document.getElementById('authNameField').style.display='none';
+  }else{
+    document.getElementById('authNameField').style.display='grid';
+    try{
+      const userId=session?.user?.id;
+      if(userId){
+        const {data:profile}=await sbClient.from('profiles').select('display_name').eq('user_id',userId).maybeSingle();
+        if(profile?.display_name && !profile.display_name.includes('@')) nameInput.value=profile.display_name;
+      }
+    }catch(e){}
+  }
+}
+
+async function finishPasswordSetup(){
+  if(!sbClient)return;
+
+  const password=document.getElementById('authNewPassword')?.value||'';
+  const confirmPassword=document.getElementById('authConfirmPassword')?.value||'';
+  const displayName=(document.getElementById('authDisplayName')?.value||'').trim();
+
+  if(password.length<8){
+    setAuthMessage('authPasswordMessage','Use uma senha com pelo menos 8 caracteres.','error');
+    return;
+  }
+  if(password!==confirmPassword){
+    setAuthMessage('authPasswordMessage','As duas senhas precisam ser iguais.','error');
+    return;
+  }
+
+  setAuthButtonBusy('authPasswordBtn',true,'SALVANDO...','SALVAR E CONTINUAR');
+  const {error}=await sbClient.auth.updateUser({password});
+
+  if(error){
+    setAuthButtonBusy('authPasswordBtn',false,'SALVANDO...','SALVAR E CONTINUAR');
+    setAuthMessage('authPasswordMessage',authFriendlyError(error),'error');
+    return;
+  }
+
+  const {data:{user}}=await sbClient.auth.getUser();
+  if(user && displayName){
+    await sbClient.from('profiles').update({display_name:displayName}).eq('user_id',user.id);
+  }
+
+  cleanAuthUrl();
+  setAuthButtonBusy('authPasswordBtn',false,'SALVANDO...','SALVAR E CONTINUAR');
+
+  const {data:{session}}=await sbClient.auth.getSession();
+  if(session) await loadMerchantContext(session);
+}
+
+async function loadMerchantContext(session){
+  if(!sbClient||!session){
+    showAuthPanel('authLoginPanel');
+    return;
+  }
+
+  showAuthPanel('authLoadingPanel');
+
+  const {data:userData,error:userError}=await sbClient.auth.getUser();
+  const user=userData?.user;
+  if(userError||!user){
+    showAuthPanel('authLoginPanel');
+    return;
+  }
+
+  const [profileResult,membershipResult]=await Promise.all([
+    sbClient.from('profiles')
+      .select('display_name,phone')
+      .eq('user_id',user.id)
+      .maybeSingle(),
+    sbClient.from('establishment_users')
+      .select('establishment_id,role,status')
+      .eq('user_id',user.id)
+      .limit(1)
+  ]);
+
+  if(profileResult.error){
+    document.getElementById('authErrorText').textContent='Seu login foi reconhecido, mas não foi possível carregar seu perfil.';
+    showAuthPanel('authErrorPanel');
+    return;
+  }
+
+  if(membershipResult.error){
+    document.getElementById('authErrorText').textContent='Seu login foi reconhecido, mas não foi possível validar o vínculo com o estabelecimento.';
+    showAuthPanel('authErrorPanel');
+    return;
+  }
+
+  const membership=(membershipResult.data||[])[0];
+  if(!membership){
+    document.getElementById('authPendingMeta').innerHTML=
+      `<strong>${escapeHtml(user.email||'Usuário')}</strong><br>O administrador precisa vincular este login a um estabelecimento.`;
+    showAuthPanel('authPendingPanel');
+    return;
+  }
+
+  if(membership.status!=='active'){
+    document.getElementById('authBlockedText').textContent='Este usuário está bloqueado para acessar o estabelecimento.';
+    showAuthPanel('authBlockedPanel');
+    return;
+  }
+
+  const {data:establishment,error:estError}=await sbClient
+    .from('establishments')
+    .select('id,code,business_name,responsible_name,phone,status,theme,logo_url')
+    .eq('id',membership.establishment_id)
+    .maybeSingle();
+
+  if(estError||!establishment){
+    document.getElementById('authErrorText').textContent='Não foi possível carregar os dados do estabelecimento vinculado.';
+    showAuthPanel('authErrorPanel');
+    return;
+  }
+
+  if(establishment.status==='blocked'){
+    document.getElementById('authBlockedText').textContent=`${establishment.business_name} está bloqueado no Põe na Conta.`;
+    showAuthPanel('authBlockedPanel');
+    return;
+  }
+
+  onlineContext={
+    userId:user.id,
+    email:user.email||null,
+    establishmentId:establishment.id,
+    establishmentCode:establishment.code||null,
+    establishmentStatus:establishment.status,
+    role:membership.role
+  };
+
+  STORE_KEY=STORE_KEY_BASE+':'+establishment.id;
+  data=load();
+  migrateData();
+
+  data.store.id=establishment.id;
+  data.store.name=establishment.business_name;
+  data.store.theme=establishment.theme||data.store.theme||'teal';
+  if(establishment.logo_url) data.store.logo=establishment.logo_url;
+
+  const fallbackName=(user.email||'usuario').split('@')[0];
+  data.currentUser={
+    id:user.id,
+    name:profileResult.data?.display_name||establishment.responsible_name||fallbackName,
+    role:authRoleLabel(membership.role)
+  };
+
+  save();
+  renderAll();
+
+  const app=document.getElementById('merchantApp');
+  if(app) app.classList.add('auth-ready');
+  const gate=document.getElementById('authGate');
+  if(gate) gate.style.display='none';
+}
+
+async function logoutOnline(){
+  try{ if(sbClient) await sbClient.auth.signOut(); }catch(e){}
+  STORE_KEY=STORE_KEY_BASE+':guest';
+  onlineContext={userId:null,email:null,establishmentId:null,establishmentCode:null,establishmentStatus:null,role:null};
+  location.reload();
+}
+
+async function handleAuthEvent(event,session){
+  if(event==='PASSWORD_RECOVERY'){
+    await showPasswordSetup('recovery',session);
+    return;
+  }
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION') && session){
+    if(INITIAL_AUTH_FLOW==='invite'){
+      await showPasswordSetup('invite',session);
+      return;
+    }
+    if(INITIAL_AUTH_FLOW==='recovery'){
+      await showPasswordSetup('recovery',session);
+      return;
+    }
+    await loadMerchantContext(session);
+    return;
+  }
+  if(event==='SIGNED_OUT'){
+    document.getElementById('merchantApp')?.classList.remove('auth-ready');
+    const gate=document.getElementById('authGate');
+    if(gate)gate.style.display='flex';
+    showAuthPanel('authLoginPanel');
+  }
+}
+
+async function initOnlineAccess(){
+  if(!sbClient){
+    document.getElementById('authErrorText').textContent='A biblioteca segura de acesso não carregou. Verifique sua conexão com a internet.';
+    showAuthPanel('authErrorPanel');
+    return;
+  }
+
+  sbClient.auth.onAuthStateChange((event,session)=>{
+    setTimeout(()=>handleAuthEvent(event,session),0);
+  });
+
+  const {data:{session},error}=await sbClient.auth.getSession();
+  if(error){
+    document.getElementById('authErrorText').textContent=authFriendlyError(error);
+    showAuthPanel('authErrorPanel');
+    return;
+  }
+
+  if(session){
+    if(INITIAL_AUTH_FLOW==='invite') await showPasswordSetup('invite',session);
+    else if(INITIAL_AUTH_FLOW==='recovery') await showPasswordSetup('recovery',session);
+    else await loadMerchantContext(session);
+  }else{
+    showAuthPanel('authLoginPanel');
+  }
+}
+
+document.addEventListener('keydown',(ev)=>{
+  if(ev.key==='Enter' && document.getElementById('authLoginPanel')?.classList.contains('active')){
+    loginOnline();
+  }
+});
+
+function isoDate(daysAgo=0, hour=12, minute=0){
+  const d = new Date();
+  d.setDate(d.getDate()-daysAgo);
+  d.setHours(hour,minute,0,0);
+  return d.toISOString();
+}
+const seed = {
+  store:{id:'pending',name:'Meu negócio',limitAlertPct:80,theme:'teal',logo:null},
+  currentUser:{id:'pending',name:'Usuário',role:'Comerciante'},
+  clients:[],
+  movements:[],
+  clientExternalStores:{},
+  audits:[],
+  selectedClientId:null,
+  privacyMode:false
+};
+
+let data = load();
+let actionState = null;
+let reversalState = null;
+let quickLock = false;
+let clientViewMode='general';
+let selectedClientStoreId=null;
+
+function migrateData(){
+  if(!data.store) data.store={id:'pending',name:'Meu negócio'};
+  if(!data.store.limitAlertPct) data.store.limitAlertPct=80;
+  if(!data.store.theme) data.store.theme='teal';
+  if(typeof data.store.logo==='undefined') data.store.logo=null;
+  if(!data.clientExternalStores) data.clientExternalStores=clone(seed.clientExternalStores||{});
+  data.clients.forEach(c=>{
+    if(!c.openingMode) c.openingMode='unknown';
+  });
+  if(typeof data.privacyMode==='undefined') data.privacyMode=false;
+  save();
+}
+migrateData();
+
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : clone(seed);
+  }catch(e){ return clone(seed); }
+}
+function save(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  const chip=document.getElementById('syncChip');
+  if(chip){
+    chip.textContent=onlineContext.userId ? '● Online' : '● Offline';
+  }
+}
+function money(cents){
+  return (cents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function parseMoneyInput(v){
+  const digits=(v||'').replace(/\D/g,'');
+  return digits ? parseInt(digits,10) : 0;
+}
+function formatMoneyInput(el){
+  const cents=parseMoneyInput(el.value);
+  el.value = cents ? money(cents) : '';
+}
+function dt(iso){
+  return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function getClient(id){return data.clients.find(c=>c.id===id)}
+function balance(clientId){
+  return data.movements.filter(m=>m.clientId===clientId && m.status==='active').reduce((s,m)=>{
+    if(m.type==='charge'||m.type==='opening') return s+m.amount;
+    if(m.type==='payment') return s-m.amount;
+    if(m.type==='reversal') return s-m.amount;
+    return s;
+  },0);
+}
+
+function balanceTitle(c){
+  return 'Saldo';
+}
+function balanceNote(c){
+  return 'Saldo acompanhado pelo Põe na Conta';
+}
+function limitUsage(c){
+  if(c.limitMode!=='fixed' || !c.limit || c.limit<=0) return null;
+  return Math.max(0, Math.round((balance(c.id)/c.limit)*100));
+}
+function limitAlertHtml(c){
+  const usage=limitUsage(c);
+  if(usage===null) return '';
+  const threshold=Number(data.store.limitAlertPct||80);
+  if(usage<threshold) return '';
+  const cls=usage>=100?'status block':'status warn';
+  return `<span class="${cls}">${usage}% DO LIMITE</span>`;
+}
+function available(c){
+  if(c.limitMode==='free' || c.limit==null) return null;
+  return Math.max(c.limit-balance(c.id),0);
+}
+function addAudit(action,detail,user=null){
+  user=user||data.currentUser?.name||'Usuário';
+  data.audits.unshift({date:new Date().toISOString(),user,action,detail});
+  data.audits=data.audits.slice(0,100);
+}
+function notify(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+function statusFor(c){
+  if(c.blocked) return '<span class="status block">BLOQUEADO</span>';
+  const b=balance(c.id);
+  if(c.limitMode==='fixed' && c.limit && b>=c.limit*.9) return '<span class="status warn">LIMITE ALTO</span>';
+  return '<span class="status ok">ATIVO</span>';
+}
+function clientType(c){
+  return c.connected ? '📱 Com app' : '📒 Sem app';
+}
+function togglePrivacy(){
+  data.privacyMode=!data.privacyMode;
+  save();
+  renderQuickClients();
+  const btn=document.getElementById('privacyBtn');
+  if(btn) btn.textContent=data.privacyMode?'👁 Mostrar saldos':'👁 Ocultar saldos';
+  notify(data.privacyMode?'Saldos ocultados somente na tela de balcão.':'Saldos do balcão novamente visíveis.');
+}
+
+const THEME_MAP={
+  teal:{primary:'#0f766e',primary2:'#0d9488'},
+  blue:{primary:'#2563eb',primary2:'#3b82f6'},
+  navy:{primary:'#1e3a8a',primary2:'#1d4ed8'},
+  wine:{primary:'#9f1239',primary2:'#be123c'},
+  orange:{primary:'#c2410c',primary2:'#ea580c'},
+  purple:{primary:'#7e22ce',primary2:'#9333ea'},
+  darkgray:{primary:'#374151',primary2:'#4b5563'},
+  red:{primary:'#b91c1c',primary2:'#dc2626'}
+};
+function initials(name){
+  return (name||'PC').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+}
+function themeColor(theme){
+  return (THEME_MAP[theme]||THEME_MAP.teal).primary;
+}
+function applyStoreBranding(){
+  const t=THEME_MAP[data.store.theme]||THEME_MAP.teal;
+  document.documentElement.style.setProperty('--primary',t.primary);
+  document.documentElement.style.setProperty('--primary-2',t.primary2);
+  const storeName=document.getElementById('storeName');
+  if(storeName) storeName.textContent=data.store.name;
+  const profileChip=document.getElementById('profileChip');
+  if(profileChip) profileChip.textContent=`👤 ${data.currentUser?.name||'Usuário'} • ${data.currentUser?.role||'Comerciante'} ▾`;
+  const syncChip=document.getElementById('syncChip');
+  if(syncChip) syncChip.textContent=onlineContext.userId?'● Online':'● Offline';
+  const fallback=document.getElementById('brandLogoFallback');
+  const img=document.getElementById('brandLogoImg');
+  if(data.store.logo){
+    img.src=data.store.logo; img.style.display='block'; fallback.style.display='none';
+  }else{
+    img.style.display='none'; fallback.style.display='grid'; fallback.textContent=initials(data.store.name);
+  }
+}
+function renderStoreConfig(){
+  const name=document.getElementById('storeDisplayName');
+  if(!name) return;
+  name.value=data.store.name||'';
+  const preview=document.getElementById('storeLogoPreview');
+  preview.innerHTML=data.store.logo?`<img src="${data.store.logo}" alt="Logo do estabelecimento">`:initials(data.store.name);
+  document.querySelectorAll('.theme-option').forEach(b=>b.classList.toggle('active',b.dataset.theme===data.store.theme));
+}
+function handleStoreLogo(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    data.store.logo=reader.result;
+    save();
+    renderStoreConfig();
+    applyStoreBranding();
+  };
+  reader.readAsDataURL(file);
+}
+function removeStoreLogo(){
+  data.store.logo=null;
+  const input=document.getElementById('storeLogoInput');
+  if(input) input.value='';
+  save();renderStoreConfig();applyStoreBranding();notify('Logo removida.');
+}
+async function saveStoreBranding(){
+  const n=(document.getElementById('storeDisplayName')?.value||'').trim();
+  if(!n){notify('Informe o nome do estabelecimento.');return}
+  data.store.name=n;
+  addAudit('IDENTIDADE VISUAL',`Aparência do negócio atualizada. Tema: ${data.store.theme}.`);
+  save();applyStoreBranding();renderStoreConfig();renderClientApp();
+
+  if(sbClient && onlineContext.establishmentId){
+    const {error}=await sbClient
+      .from('establishments')
+      .update({business_name:n,theme:data.store.theme})
+      .eq('id',onlineContext.establishmentId);
+
+    if(error){
+      notify('Aparência salva neste aparelho, mas não atualizou no servidor.');
+      return;
+    }
+  }
+  notify('Aparência do negócio salva.');
+}
+function chooseTheme(theme){
+  if(!THEME_MAP[theme]) return;
+  data.store.theme=theme;
+  save();applyStoreBranding();renderStoreConfig();renderClientApp();
+}
+function renderAll(){
+  applyStoreBranding();renderStoreConfig();renderKpis();renderQuickClients();renderClients();renderMovements();renderClientPreviewSelect();renderClientApp();renderAudit();renderFinance();
+}
+function renderKpis(){
+  const total=data.clients.reduce((s,c)=>s+Math.max(balance(c.id),0),0);
+  const now=new Date();
+  const rec=data.movements.filter(m=>m.type==='payment' && m.status==='active').filter(m=>{const d=new Date(m.createdAt);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,m)=>s+m.amount,0);
+  const withBalance=data.clients.filter(c=>balance(c.id)>0).length;
+  const overdue=data.clients.filter(c=>balance(c.id)>0 && c.id==='c5').reduce((s,c)=>s+balance(c.id),0);
+  const r=document.getElementById('kpiReceivable'), p=document.getElementById('kpiReceived'), w=document.getElementById('kpiWithBalance'), o=document.getElementById('kpiOverdue');
+  if(r) r.textContent=money(total);
+  if(p) p.textContent=money(rec);
+  if(w) w.textContent=withBalance;
+  if(o) o.textContent=money(overdue);
+  const btn=document.getElementById('privacyBtn');
+  if(btn) btn.textContent=data.privacyMode?'👁 Mostrar saldos':'👁 Ocultar saldos';
+  const sel=document.getElementById('limitAlertPct');
+  if(sel) sel.value=String(data.store.limitAlertPct||80);
+}
+function renderQuickClients(){
+  const q=(document.getElementById('quickSearch').value||'').toLowerCase();
+  const list=data.clients.filter(c=>(c.name+' '+(c.nickname||'')).toLowerCase().includes(q)).slice(0,8);
+  const el=document.getElementById('quickClients');
+  if(!list.length){el.innerHTML='<div class="empty">Nenhum cliente encontrado.</div>';return}
+  el.innerHTML=list.map(c=>{
+    const b=balance(c.id);
+    const alert=limitAlertHtml(c);
+    return `<div class="client" onclick="selectQuick('${c.id}')">
+      <div class="client-left">
+        <div class="avatar">${c.name[0]}</div>
+        <div>
+          <h3>${c.name}${c.nickname?` <span style="color:#667085;font-weight:600">(${c.nickname})</span>`:''}</h3>
+          <small>${clientType(c)} • ${c.blocked?'Crédito bloqueado':(c.limitMode==='free'?'Crédito livre':'Limite do fiado definido')}</small>
+          ${alert?`<div style="margin-top:5px">${alert}</div>`:''}
+        </div>
+      </div>
+      <div class="right"><div class="money">${data.privacyMode?'••••••':money(b)}</div><small>${'saldo'}</small></div>
+    </div>`;
+  }).join('');
+}
+function triggerQuickPhoto(){
+  const input=document.getElementById('quickPhotoInput');
+  input.value='';
+  input.click();
+}
+function handleQuickPhoto(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){notify('Selecione uma imagem.');return}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(img.width*scale));
+      canvas.height=Math.max(1,Math.round(img.height*scale));
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      quickPendingPhoto=canvas.toDataURL('image/jpeg',.72);
+      const preview=document.getElementById('quickPhotoPreview');
+      const thumb=document.getElementById('quickPhotoThumb');
+      const btn=document.getElementById('quickPhotoBtn');
+      if(thumb)thumb.src=quickPendingPhoto;
+      if(preview)preview.classList.add('show');
+      if(btn)btn.innerHTML='✓ FOTO PRONTA <span style="font-weight:650;opacity:.85">(toque para trocar)</span>';
+      notify('Foto pronta. Ela será anexada quando o lançamento for confirmado.');
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeQuickPhoto(){
+  quickPendingPhoto=null;
+  const preview=document.getElementById('quickPhotoPreview');
+  const thumb=document.getElementById('quickPhotoThumb');
+  const btn=document.getElementById('quickPhotoBtn');
+  if(preview)preview.classList.remove('show');
+  if(thumb)thumb.removeAttribute('src');
+  if(btn)btn.innerHTML='📷 FOTO DA ANOTAÇÃO <span style="font-weight:650;opacity:.85">(opcional)</span>';
+}
+function selectQuick(id){
+  data.selectedClientId=id;save();
+  const c=getClient(id);
+  const box=document.getElementById('quickSelected');
+  const amount=document.getElementById('quickAmount');
+  const btn=document.getElementById('quickAddBtn')||document.querySelector('.big-add');
+  const confirmation=document.getElementById('quickConfirmation');
+  if(confirmation) confirmation.classList.remove('show');
+  if(!c){
+    box.innerHTML='<strong>Escolha um cliente</strong><span>Toque em um nome da lista abaixo.</span>';
+    amount.disabled=false; btn.disabled=false; btn.style.opacity='1';
+    return;
+  }
+  const b=balance(id);const av=available(c);const alert=limitAlertHtml(c);
+  const limitText=c.limitMode==='free'?'sem limite':`limite do fiado ${money(c.limit)}${av===null?'':` • disponível ${money(av)}`}`;
+  if(c.blocked){
+    box.innerHTML=`<strong>${c.name}</strong><span style="color:#ffd5d2;font-weight:800">CRÉDITO BLOQUEADO</span><span style="display:block;margin-top:4px">${balanceTitle(c)}: ${money(b)}</span>`;
+    amount.value=''; amount.disabled=true; btn.disabled=true; btn.style.opacity='.55';
+    notify(`Fiado de ${c.name} está bloqueado.`);
+    return;
+  }
+  box.innerHTML=`<strong>${c.name}</strong><span>${balanceTitle(c)}: ${money(b)} • ${limitText}</span>${alert?`<span style="display:block;margin-top:5px;color:#fff4c2;font-weight:800">⚠ ${limitUsage(c)}% do limite do fiado utilizado</span>`:''}`;
+  amount.disabled=false; btn.disabled=false; btn.style.opacity='1';
+  amount.focus();
+}
+function quickAdd(){
+  if(quickLock) return;
+  const c=getClient(data.selectedClientId);
+  const amount=parseMoneyInput(document.getElementById('quickAmount').value);
+  const btn=document.getElementById('quickAddBtn')||document.querySelector('.big-add');
+  if(!c){notify('Selecione um cliente.');return}
+  if(c.blocked){notify('Crédito bloqueado para este cliente.');return}
+  if(amount<=0){notify('Informe um valor.');return}
+
+  const before=balance(c.id);
+  const av=available(c);
+  if(av!==null && amount>av){
+    if(!confirm(`O lançamento ultrapassa o limite do fiado disponível de ${money(av)}. Autorizar mesmo assim como proprietário?`)) return;
+    addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do disponível.`);
+  }
+
+  quickLock=true;
+  btn.disabled=true;
+  btn.style.opacity='.85';
+  createMovement(c.id,'charge',amount,'');
+  const after=balance(c.id);
+
+  const conf=document.getElementById('quickConfirmation');
+  conf.innerHTML=`
+    <div class="confirm-title">✓ LANÇAMENTO CONFIRMADO</div>
+    <div class="confirm-main">${c.name} — ${money(amount)}</div>
+    <div class="confirm-meta">
+      ${balanceTitle(c)} antes: ${money(before)}<br>
+      <strong>Novo ${c.openingMode==='unknown'?'valor registrado':'saldo'}: ${money(after)}</strong><br>
+      ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} • ${data.store.name}
+      
+    </div>`;
+  conf.classList.add('show');
+
+  document.getElementById('quickAmount').value='';
+  btn.textContent=`✓ ${money(amount)} LANÇADO`;
+
+  const usage=limitUsage(c);
+  const threshold=Number(data.store.limitAlertPct||80);
+  if(usage!==null && usage>=threshold){
+    notify(`Alerta interno: ${c.name} atingiu ${usage}% do limite.`);
+  }else{
+    notify(c.connected?'Lançamento confirmado e notificação simulada enviada ao cliente.':'Lançamento confirmado.');
+  }
+
+  setTimeout(()=>{
+    quickLock=false;
+    btn.disabled=false;
+    btn.style.opacity='1';
+    btn.textContent='PÕE NA CONTA';
+  },2200);
+}
+function createMovement(clientId,type,amount,note,ref=null){
+  const id='mov-'+Date.now();
+  const m={id,clientId,type,amount,createdAt:new Date().toISOString(),user:(data.currentUser?.name||'Usuário'),ref,note:note||'',status:'active'};
+  data.movements.push(m);
+  const c=getClient(clientId);
+  const action=type==='charge'?'LANÇAMENTO':type==='payment'?'PAGAMENTO':type==='opening'?'SALDO DE ABERTURA':'ESTORNO';
+  addAudit(action,`${money(amount)} • ${c.name}${ref?` • referência ${ref}`:''}`);
+  save();renderAll();
+  return m;
+}
+function renderRecent(){
+  const rows=[...data.movements].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+  let running={};
+  data.clients.forEach(c=>running[c.id]=0);
+  const chronological=[...data.movements].sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const after={};
+  chronological.forEach(m=>{
+    if(m.status!=='active') return;
+    if(m.type==='charge') running[m.clientId]+=m.amount;
+    if(m.type==='payment'||m.type==='reversal') running[m.clientId]-=m.amount;
+    after[m.id]=running[m.clientId];
+  });
+  document.getElementById('recentBody').innerHTML=rows.map(m=>{
+    const c=getClient(m.clientId);
+    const label=m.type==='charge'?'Lançamento':m.type==='payment'?'Pagamento':m.type==='opening'?'Saldo inicial':'Estorno';
+    const cls=(m.type==='charge'||m.type==='opening')?'positive':'negative';
+    const sign=(m.type==='charge'||m.type==='opening')?'+':'−';
+    return `<tr><td>${dt(m.createdAt)}</td><td><strong>${c?.name||'—'}</strong></td><td>${label}</td><td>${m.user}</td><td class="right ${cls}">${sign} ${money(m.amount)}</td><td class="right">${money(after[m.id]||0)}</td></tr>`;
+  }).join('');
+}
+function renderClients(){
+  const q=(document.getElementById('clientSearch').value||'').toLowerCase();
+  const f=document.getElementById('clientFilter').value;
+  const rows=data.clients.filter(c=>{
+    const match=(c.name+' '+(c.nickname||'')).toLowerCase().includes(q);
+    if(!match) return false;
+    if(f==='balance') return balance(c.id)>0;
+    if(f==='blocked') return c.blocked;
+    if(f==='connected') return c.connected;
+    if(f==='traditional') return !c.connected;
+    return true;
+  });
+  document.getElementById('clientsBody').innerHTML=rows.map(c=>{
+    const b=balance(c.id), av=available(c), usage=limitUsage(c);
+    return `<tr>
+      <td><strong>${c.name}</strong><div class="mini-note">${c.nickname||''}</div></td>
+      <td>${clientType(c)}</td>
+      <td><span class="internal-badge">INTERNO</span> ${c.limitMode==='free'?'Livre':money(c.limit)}</td>
+      <td>${av===null?'—':money(av)}</td>
+      <td>${statusFor(c)} ${limitAlertHtml(c)}</td>
+      <td class="right"><strong>${money(b)}</strong><div class="mini-note">${'saldo'}</div></td>
+      <td class="right"><button class="btn btn-light btn-small" onclick="openClient('${c.id}')">Abrir</button></td>
+    </tr>`;
+  }).join('');
+}
+function renderMovements(){
+  const q=(document.getElementById('movementSearch').value||'').toLowerCase();
+  const f=document.getElementById('movementType').value;
+  const rows=[...data.movements].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).filter(m=>{
+    const c=getClient(m.clientId); const match=(c?.name||'').toLowerCase().includes(q);
+    return match && (f==='all'||m.type===f);
+  });
+  document.getElementById('movementsBody').innerHTML=rows.map(m=>{
+    const c=getClient(m.clientId);
+    const label=m.type==='charge'?'Lançamento':m.type==='payment'?'Pagamento':m.type==='opening'?'Saldo inicial':'Estorno';
+    const sign=(m.type==='charge'||m.type==='opening')?'+':'−';
+    const cls=(m.type==='charge'||m.type==='opening')?'positive':'negative';
+    const reversal=data.movements.find(x=>x.type==='reversal'&&x.ref===m.id&&x.status==='active');
+    const canReverse=m.type==='charge' && !reversal;
+    return `<tr>
+      <td><code>${m.id}</code></td><td>${dt(m.createdAt)}</td><td>${c?.name||'—'}</td><td>${label}</td><td>${m.user}</td>
+      <td>${m.ref?`Origem: ${m.ref}`:''}${reversal?`<span class="status block">ESTORNADO</span>`:''}${canReverse?` <button class="btn btn-warn btn-small" onclick="reverseMovement('${m.id}')">Estornar</button>`:''}</td>
+      <td class="right ${cls}">${sign} ${money(m.amount)}</td>
+    </tr>`;
+  }).join('');
+}
+function openClient(id){
+  const c=getClient(id), b=balance(id), av=available(c);
+  document.getElementById('clientModalTitle').textContent=c.name;
+  const movements=[...data.movements].filter(m=>m.clientId===id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  document.getElementById('clientModalBody').innerHTML=`
+    <div class="detail-hero">
+      <div>
+        <div class="mini-note">${balanceTitle(c)}</div>
+        <div class="big">${money(b)}</div>
+        <div class="mini-note">${clientType(c)} • ${c.phone||'sem telefone cadastrado'}</div>
+        
+      </div>
+      <div>${statusFor(c)} ${limitAlertHtml(c)}</div>
+    </div>
+    <div class="form-grid">
+      <button class="btn btn-primary" onclick="openAction('charge','${id}')">+ Põe na Conta</button>
+      <button class="btn btn-dark" onclick="openAction('payment','${id}')">Receber pagamento</button>
+      <button class="btn btn-light" onclick="editLimit('${id}')">Alterar limite do fiado</button>
+      <button class="btn ${c.blocked?'btn-light':'btn-danger'}" onclick="toggleBlock('${id}')">${c.blocked?'Desbloquear crédito':'Bloquear crédito'}</button>
+    </div>
+    <div class="divider"></div>
+    <div><span class="internal-badge">SÓ ESTABELECIMENTO</span> <strong>Limite:</strong> ${c.limitMode==='free'?'Crédito livre':money(c.limit)} ${av===null?'':`• disponível ${money(av)}`}</div>
+    <div class="divider"></div>
+    <div class="activity">${movements.length?movements.map(m=>`<div class="activity-item"><div class="dot"></div><div style="flex:1"><strong>${m.type==='charge'?'Lançamento':m.type==='payment'?'Pagamento':m.type==='opening'?'Saldo inicial':'Estorno'} • ${money(m.amount)}</strong><div class="mini-note">${dt(m.createdAt)} • ${m.user}${m.ref?` • ref. ${m.ref}`:''}</div></div></div>`).join(''):'<div class="empty">Sem movimentações.</div>'}</div>
+  `;
+  showModal('clientModal');
+}
+function openAction(type,clientId){
+  actionState={type,clientId};
+  const c=getClient(clientId);
+  document.getElementById('actionTitle').textContent=type==='charge'?`Põe na Conta — ${c.name}`:`Receber de ${c.name}`;
+  document.getElementById('actionNoteRow').style.display=type==='payment'?'grid':'none';
+  document.getElementById('actionAmount').value='';
+  document.getElementById('actionNote').value='';
+  closeModal('clientModal');showModal('actionModal');
+}
+function confirmAction(){
+  if(!actionState) return;
+  const c=getClient(actionState.clientId);
+  const amount=parseMoneyInput(document.getElementById('actionAmount').value);
+  const note=document.getElementById('actionNote').value.trim();
+  if(amount<=0){notify('Informe um valor.');return}
+  if(actionState.type==='charge'){
+    if(c.blocked){notify('Fiado bloqueado.');return}
+    const av=available(c);
+    if(av!==null && amount>av){
+      if(!confirm(`Ultrapassa o limite disponível de ${money(av)}. Autorizar mesmo assim?`)) return;
+      addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do disponível.`);
+    }
+  } else {
+    const b=balance(c.id);
+    if(amount>b && !confirm(`O pagamento é maior que o saldo atual (${money(b)}). Registrar mesmo assim?`)) return;
+  }
+  createMovement(c.id,actionState.type,amount,note);
+  closeModal('actionModal');
+  notify(actionState.type==='charge'?`${money(amount)} colocado na conta de ${c.name}.`:`Pagamento de ${money(amount)} registrado para ${c.name}.`);
+  actionState=null;
+}
+function reverseMovement(id){
+  const m=data.movements.find(x=>x.id===id);
+  if(!m||m.type!=='charge') return;
+
+  if(data.movements.some(x=>x.type==='reversal'&&x.ref===id&&x.status==='active')){
+    notify('Este lançamento já foi estornado.');
+    return;
+  }
+
+  const c=getClient(m.clientId);
+  reversalState={movementId:id};
+
+  document.getElementById('reversalModalTitle').textContent='⚠ Confirmar estorno';
+  document.getElementById('reversalModalSubtitle').textContent='Confira o lançamento antes de concluir. O registro original permanecerá no histórico.';
+  document.getElementById('reversalModalBody').innerHTML=`
+    <div class="reversal-warning">
+      <h4>Você está prestes a estornar este lançamento:</h4>
+      <div class="reversal-line"><span>Cliente</span><strong>${c.name}</strong></div>
+      <div class="reversal-line"><span>Valor</span><strong>${money(m.amount)}</strong></div>
+      <div class="reversal-line"><span>Data/hora</span><strong>${dt(m.createdAt)}</strong></div>
+      <div class="reversal-line"><span>Lançamento original</span><strong>${m.id}</strong></div>
+      <div class="reversal-line"><span>${balanceTitle(c)}</span><strong>${money(balance(c.id))}</strong></div>
+    </div>
+    <div class="form-row">
+      <label>Motivo do estorno *</label>
+      <input id="reversalReason" placeholder="Ex.: valor digitado incorretamente" />
+    </div>
+    <div class="info-strip">O lançamento original não será apagado. Será criada uma movimentação de estorno vinculada a ele.</div>
+  `;
+  document.getElementById('reversalModalFooter').innerHTML=`
+    <button class="btn btn-light" onclick="cancelReversal()">Cancelar</button>
+    <button class="btn btn-danger" onclick="confirmReversal()">CONFIRMAR ESTORNO</button>
+  `;
+  showModal('reversalModal');
+}
+
+function cancelReversal(){
+  reversalState=null;
+  closeModal('reversalModal');
+}
+
+function confirmReversal(){
+  if(!reversalState) return;
+
+  const m=data.movements.find(x=>x.id===reversalState.movementId);
+  if(!m) return;
+
+  if(data.movements.some(x=>x.type==='reversal'&&x.ref===m.id&&x.status==='active')){
+    notify('Este lançamento já foi estornado.');
+    closeModal('reversalModal');
+    reversalState=null;
+    return;
+  }
+
+  const reason=(document.getElementById('reversalReason')?.value||'').trim();
+  if(!reason){
+    notify('Informe o motivo do estorno.');
+    document.getElementById('reversalReason')?.focus();
+    return;
+  }
+
+  const c=getClient(m.clientId);
+  const before=balance(c.id);
+
+  createMovement(m.clientId,'reversal',m.amount,reason,m.id);
+
+  const after=balance(c.id);
+  addAudit('ESTORNO CONFIRMADO',`${c.name}: ${money(m.amount)} estornado. Motivo: ${reason}. Lançamento original: ${m.id}.`);
+
+  document.getElementById('reversalModalTitle').textContent='Estorno concluído';
+  document.getElementById('reversalModalSubtitle').textContent='A operação foi registrada e vinculada ao lançamento original.';
+  document.getElementById('reversalModalBody').innerHTML=`
+    <div class="reversal-success">
+      <div class="icon">✅</div>
+      <h3>ESTORNO REALIZADO</h3>
+      <div class="amount">${money(m.amount)}</div>
+      <p><strong>${c.name}</strong></p>
+      <p>${balanceTitle(c)} antes: ${money(before)}</p>
+      <p><strong>Novo ${c.openingMode==='unknown'?'valor registrado':'saldo'}: ${money(after)}</strong></p>
+      <p>Lançamento original: ${m.id}</p>
+      <p>Motivo: ${reason}</p>
+    </div>
+    <div class="info-strip">O lançamento original continua visível no histórico, junto com este estorno.</div>
+  `;
+  document.getElementById('reversalModalFooter').innerHTML=`
+    <button class="btn btn-primary" onclick="finishReversal()">Fechar</button>
+  `;
+  reversalState=null;
+  save();
+  renderAll();
+}
+
+function finishReversal(){
+  closeModal('reversalModal');
+  notify('Estorno realizado e registrado no histórico.');
+}
+
+function toggleBlock(id){
+  const c=getClient(id);c.blocked=!c.blocked;
+  addAudit(c.blocked?'BLOQUEIO':'DESBLOQUEIO',`${c.name}: crédito ${c.blocked?'bloqueado':'desbloqueado'}.`);
+  save();renderAll();closeModal('clientModal');notify(`Fiado de ${c.name} ${c.blocked?'bloqueado':'desbloqueado'}.`);
+}
+function editLimit(id){
+  const c=getClient(id);
+  const current=c.limitMode==='free'?'livre':(c.limit/100).toFixed(2).replace('.',',');
+  const v=prompt(`Digite o novo limite em reais ou escreva "livre".\nAtual: ${current}`,current);
+  if(v===null) return;
+  const old=c.limitMode==='free'?'livre':money(c.limit);
+  if(v.trim().toLowerCase()==='livre'){
+    c.limitMode='free';c.limit=null;
+  }else{
+    const cents=parseMoneyInput(v);
+    if(cents<=0){notify('Limite inválido.');return}
+    c.limitMode='fixed';c.limit=cents;
+  }
+  addAudit('ALTERAÇÃO DE LIMITE',`${c.name}: ${old} → ${c.limitMode==='free'?'livre':money(c.limit)}.`);
+  save();renderAll();closeModal('clientModal');notify('Limite atualizado.');
+}
+function openNewClient(){showModal('newClientModal');}
+function toggleNewLimit(){document.getElementById('newLimitRow').style.display=document.getElementById('newLimitMode').value==='fixed'?'grid':'none'}
+function toggleOpeningBalance(){document.getElementById('newOpeningRow').style.display=document.getElementById('newOpeningMode').value==='informed'?'grid':'none'}
+function saveNewClient(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){notify('Informe o nome.');return}
+  const mode=document.getElementById('newLimitMode').value;
+  const limit=mode==='fixed'?parseMoneyInput(document.getElementById('newLimit').value):null;
+  if(mode==='fixed'&&limit<=0){notify('Informe o limite.');return}
+
+  const openingMode=document.getElementById('newOpeningMode').value;
+  const openingBalance=openingMode==='informed'?parseMoneyInput(document.getElementById('newOpeningBalance').value):0;
+  if(openingMode==='informed'&&openingBalance<=0){notify('Informe o saldo de abertura.');return}
+
+  const c={
+    id:'c'+Date.now(),name,
+    nickname:document.getElementById('newNickname').value.trim(),
+    phone:document.getElementById('newPhone').value.trim(),
+    connected:document.getElementById('newConnected').value==='true',
+    limitMode:mode,limit,blocked:false,dueDay:5,openingMode
+  };
+  data.clients.push(c);
+
+  if(openingMode==='informed'){
+    data.movements.push({
+      id:'mov-'+Date.now(),
+      clientId:c.id,type:'opening',amount:openingBalance,
+      createdAt:new Date().toISOString(),user:(data.currentUser?.name||'Usuário'),ref:null,
+      note:'Saldo existente antes da adoção do Põe na Conta',status:'active'
+    });
+  }
+
+  addAudit('CLIENTE CRIADO',`${c.name} • ${c.connected?'conectado':'tradicional'} • ${c.limitMode==='free'?'sem limite':'limite do fiado '+money(c.limit)} • saldo anterior: ${openingMode==='unknown'?'não informado':openingMode==='zero'?'zero':money(openingBalance)}.`);
+  save();renderAll();closeModal('newClientModal');
+
+  ['newName','newNickname','newPhone','newLimit','newOpeningBalance'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newOpeningMode').value='unknown';
+  document.getElementById('newLimitMode').value='free';
+  toggleOpeningBalance();toggleNewLimit();
+  notify(`${c.name} cadastrado.`);
+}
+function renderClientPreviewSelect(){
+  const s=document.getElementById('clientPreviewSelect');
+  if(!s) return;
+  const connected=data.clients.filter(c=>c.connected);
+  const current=s.value;
+  s.innerHTML=connected.length?connected.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''):'<option value="">Nenhum cliente conectado</option>';
+  if(connected.some(c=>c.id===current)) s.value=current;
+}
+function getClientStores(c){
+  const ownMovements=[...data.movements].filter(m=>m.clientId===c.id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const own={
+    id:data.store.id,
+    name:data.store.name,
+    theme:data.store.theme,
+    logo:data.store.logo,
+    balance:balance(c.id),
+    openingMode:c.openingMode,
+    movements:ownMovements
+  };
+  const external=(data.clientExternalStores&&data.clientExternalStores[c.id])?clone(data.clientExternalStores[c.id]):[];
+  return [own,...external];
+}
+function setClientView(mode){
+  clientViewMode=mode;
+  const g=document.getElementById('clientGeneralView'), l=document.getElementById('clientLocalView'), r=document.getElementById('clientReferencesView');
+  const gb=document.getElementById('clientGeneralTab'), lb=document.getElementById('clientLocalTab'), rb=document.getElementById('clientReferencesTab');
+  if(!g||!l||!r) return;
+  g.style.display=mode==='general'?'block':'none';
+  l.style.display=mode==='local'?'block':'none';
+  r.style.display=mode==='references'?'block':'none';
+  gb.classList.toggle('active',mode==='general');
+  lb.classList.toggle('active',mode==='local');
+  rb.classList.toggle('active',mode==='references');
+  if(mode==='local') renderSelectedClientStore();
+  if(mode==='references') renderClientReferences();
+}
+function selectClientStore(storeId){
+  selectedClientStoreId=storeId;
+  clientViewMode='local';
+  setClientView('local');
+}
+function renderSelectedClientStore(){
+  const select=document.getElementById('clientPreviewSelect');
+  const c=getClient(select.value)||data.clients.find(x=>x.connected);
+  const el=document.getElementById('previewStoreDetail');
+  if(!c||!el) return;
+  const stores=getClientStores(c);
+  let store=stores.find(s=>s.id===selectedClientStoreId)||stores[0];
+  selectedClientStoreId=store.id;
+  const movs=[...(store.movements||[])].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const logo=store.logo?`<img src="${store.logo}" alt="Logo de ${store.name}">`:initials(store.name);
+  el.innerHTML=`
+    <div class="store-detail-head">
+      <div class="row">
+        <div class="store-detail-title">
+          <div class="store-logo" style="background:${themeColor(store.theme)}">${logo}</div>
+          <div><strong>${store.name}</strong><div class="mini-note">Histórico deste comércio</div></div>
+        </div>
+        <div class="money">${money(store.balance||0)}</div>
+      </div>
+    </div>
+    ${movs.length?movs.map(m=>{
+      const charge=(m.type==='charge'||m.type==='opening');
+      const label=m.type==='payment'?'Pagamento recebido':m.type==='reversal'?'Estorno':m.type==='opening'?'Saldo inicial':'Novo lançamento';
+      return `<div class="store-card"><div class="row"><div><strong>${label}</strong><div class="mini-note">${dt(m.createdAt)}</div></div><div class="${charge?'positive':'negative'}">${charge?'+':'−'} ${money(m.amount)}</div></div></div>`;
+    }).join(''):'<div class="empty">Sem movimentações.</div>'}
+  `;
+}
+function renderClientApp(){
+  const select=document.getElementById('clientPreviewSelect');
+  if(!select) return;
+  const c=getClient(select.value)||data.clients.find(x=>x.connected);
+  if(!c){
+    const n=document.getElementById('previewName'),t=document.getElementById('previewTotal'),l=document.getElementById('previewStoreList'),d=document.getElementById('previewStoreDetail'),r=document.getElementById('clientReferencesList');
+    if(n)n.textContent='cliente'; if(t)t.textContent=money(0); if(l)l.innerHTML='<div class="empty">Nenhum cliente conectado para demonstrar.</div>'; if(d)d.innerHTML=''; if(r)r.innerHTML='';
+    return;
+  }
+  document.getElementById('previewName').textContent=c.name.split(' ')[0];
+
+  const stores=getClientStores(c);
+  const total=stores.reduce((s,x)=>s+Math.max(x.balance||0,0),0);
+  document.getElementById('previewTotal').textContent=money(total);
+
+  if(!selectedClientStoreId || !stores.some(s=>s.id===selectedClientStoreId)) selectedClientStoreId=stores[0]?.id||null;
+
+  document.getElementById('previewStoreList').innerHTML=stores.map(store=>{
+    const logo=store.logo?`<img src="${store.logo}" alt="Logo de ${store.name}">`:initials(store.name);
+    const note='Conta no Põe na Conta';
+    return `<button class="customer-store" type="button" onclick="selectClientStore('${store.id}')">
+      <div class="store-ident">
+        <div class="store-logo" style="background:${themeColor(store.theme)}">${logo}</div>
+        <div><strong>${store.name}</strong><div class="mini-note">${note}</div></div>
+      </div>
+      <div class="right"><div class="money">${money(store.balance||0)}</div><small>ver conta ›</small></div>
+    </button>`;
+  }).join('');
+
+  setClientView(clientViewMode);
+}
+
+function changeLimitAlertPct(){
+  const v=Number(document.getElementById('limitAlertPct').value);
+  data.store.limitAlertPct=v;
+  addAudit('CONFIGURAÇÃO DE ALERTA',`Alerta interno de limite definido em ${v}%.`);
+  save();renderFinance();renderQuickClients();renderClients();
+  notify(`Alerta interno configurado para ${v}% do limite.`);
+}
+function renderFinance(){
+  const alertsEl=document.getElementById('limitAlerts');
+  const body=document.getElementById('financeClientsBody');
+  if(!alertsEl||!body) return;
+
+  const threshold=Number(data.store.limitAlertPct||80);
+  const alerts=data.clients.filter(c=>{
+    const u=limitUsage(c);
+    return u!==null && u>=threshold;
+  }).sort((a,b)=>(limitUsage(b)||0)-(limitUsage(a)||0));
+
+  alertsEl.innerHTML=alerts.length?alerts.map(c=>{
+    const usage=limitUsage(c);
+    return `<div class="limit-alert ${usage>=100?'danger':''}">
+      <div><strong>${c.name}</strong><div class="mini-note">${money(balance(c.id))} registrado • limite do fiado ${money(c.limit)}</div></div>
+      <span class="${usage>=100?'status block':'status warn'}">${usage}% DO LIMITE</span>
+    </div>`;
+  }).join(''):`<div class="empty">Nenhum cliente chegou a ${threshold}% do limite do fiado.</div>`;
+
+  body.innerHTML=data.clients.map(c=>{
+    const b=balance(c.id), usage=limitUsage(c);
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${money(b)}</td>
+      <td>${openingText(c)}</td>
+      <td>${c.limitMode==='free'?'Livre':money(c.limit)}</td>
+      <td>${usage===null?'—':usage+'%'}</td>
+      <td>${statusFor(c)} ${limitAlertHtml(c)}</td>
+    </tr>`;
+  }).join('');
+}
+function renderAudit(){
+  document.getElementById('auditBody').innerHTML=[...data.audits].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30).map(a=>`<tr><td>${dt(a.date)}</td><td>${a.user}</td><td><strong>${a.action}</strong></td><td>${a.detail}</td></tr>`).join('');
+}
+function showModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function exportDemo(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='poe-na-conta-v015-backup-local.json';a.click();URL.revokeObjectURL(a.href);
+  addAudit('EXPORTAÇÃO','Base local exportada em JSON.');save();renderAudit();notify('Base local exportada.');
+}
+function resetDemo(){
+  if(!confirm('Limpar os dados deste protótipo e voltar para a base vazia?')) return;
+  data=clone(seed);migrateData();clientViewMode='general';selectedClientStoreId=null;renderAll();selectQuick(null);const qc=document.getElementById('quickConfirmation');if(qc)qc.classList.remove('show');notify('Base limpa restaurada.');
+}
+document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  btn.classList.add('active');document.getElementById(btn.dataset.view).classList.add('active');
+}));
+document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('show')}));
+document.querySelectorAll('.theme-option').forEach(b=>b.addEventListener('click',()=>chooseTheme(b.dataset.theme)));
+renderAll();
+if(data.selectedClientId) selectQuick(data.selectedClientId);
+</script>
+
+<script>
+/* ================================================================
+   PÕE NA CONTA — PATCH FUNCIONAL v0.12
+   Correções + melhorias aprovadas após os testes da v0.6.
+   A v0.6 permanece preservada em arquivo separado.
+   ================================================================ */
+let photoTargetMovementId=null;
+let quickPendingPhoto=null;
+let inviteClientId=null;
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function normalizeText(value){
+  return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+}
+function levenshtein(a,b){
+  a=normalizeText(a);b=normalizeText(b);
+  if(a===b)return 0;if(!a.length)return b.length;if(!b.length)return a.length;
+  const prev=Array.from({length:b.length+1},(_,i)=>i),cur=new Array(b.length+1);
+  for(let i=1;i<=a.length;i++){
+    cur[0]=i;
+    for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    for(let j=0;j<=b.length;j++)prev[j]=cur[j];
+  }
+  return prev[b.length];
+}
+function fuzzyMatch(text,query){
+  const t=normalizeText(text),q=normalizeText(query);
+  if(!q)return true;
+  if(t.includes(q)||q.includes(t))return true;
+  if(q.length<4)return false;
+  const maxDist=q.length>=8?2:1;
+  const words=t.split(/[^a-z0-9]+/).filter(Boolean);
+  return words.some(w=>Math.abs(w.length-q.length)<=maxDist && levenshtein(w,q)<=maxDist);
+}
+function balance(clientId){
+  return data.movements.filter(m=>m.clientId===clientId&&m.status==='active').reduce((s,m)=>{
+    if(m.type==='charge')return s+m.amount;
+    if(m.type==='opening')return s+(m.openingDirection==='credit'?-m.amount:m.amount);
+    if(m.type==='payment'||m.type==='reversal')return s-m.amount;
+    return s;
+  },0);
+}
+function balanceState(cents){return cents>0?'debt':cents<0?'credit':'zero'}
+function balanceStateName(cents){return cents>0?'Devedor':cents<0?'Em haver':'Quitado'}
+function balanceText(cents){return `${balanceStateName(cents)} — ${money(Math.abs(cents))}`}
+function balanceHtml(cents){return `<span class="balance-state ${balanceState(cents)}">${balanceStateName(cents)} — ${money(Math.abs(cents))}</span>`}
+function openingSigned(c){
+  if(c.openingMode==='unknown')return null;
+  if(c.openingMode==='zero')return 0;
+  const m=data.movements.find(x=>x.clientId===c.id&&x.type==='opening'&&x.status==='active');
+  if(!m)return 0;
+  return m.openingDirection==='credit'?-m.amount:m.amount;
+}
+function openingText(c){
+  const m=data.movements.find(x=>x.clientId===c.id&&x.type==='opening'&&x.status==='active');
+  if(!m)return '—';
+  const v=m.openingDirection==='credit'?-m.amount:m.amount;
+  return balanceText(v);
+}
+function isBlocked(c){return !!c.manualBlocked||!!c.autoBlocked}
+function blockReasonText(c){
+  if(c.manualBlocked)return 'Fiado bloqueado';
+  if(c.autoBlocked)return 'Fiado bloqueado pelo limite';
+  return c.limitMode==='free'?'Sem limite':'Limite definido';
+}
+function chargeCapacity(c){
+  if(c.limitMode==='free'||c.limit==null)return null;
+  return Math.max(c.limit-balance(c.id),0);
+}
+function available(c){
+  if(c.limitMode==='free'||c.limit==null)return null;
+  return Math.max(c.limit-Math.max(balance(c.id),0),0);
+}
+function limitUsage(c){
+  if(c.limitMode!=='fixed'||!c.limit||c.limit<=0)return null;
+  return Math.max(0,Math.round((Math.max(balance(c.id),0)/c.limit)*100));
+}
+function reevaluateAutoBlock(c,withAudit=true){
+  const old=!!c.autoBlocked;
+  const should=c.limitMode==='fixed'&&c.limit!=null&&balance(c.id)>c.limit;
+  c.autoBlocked=should;
+  if(withAudit&&old!==should){
+    addAudit(should?'BLOQUEIO AUTOMÁTICO':'DESBLOQUEIO AUTOMÁTICO',`${c.name}: ${should?'saldo devedor ultrapassou o limite do fiado':'saldo voltou para dentro do limite do fiado ou ficou em haver'}.`,'Sistema');
+  }
+}
+function reevaluateAllAutoBlocks(withAudit=false){data.clients.forEach(c=>reevaluateAutoBlock(c,withAudit))}
+function statusFor(c){
+  if(c.manualBlocked)return '<span class="status block">BLOQUEADO MANUAL</span>';
+  if(c.autoBlocked)return '<span class="status block">BLOQUEADO POR LIMITE</span>';
+  const b=balance(c.id);
+  if(c.limitMode==='fixed'&&c.limit&&b>=c.limit*.9)return '<span class="status warn">LIMITE ALTO</span>';
+  return '<span class="status ok">ATIVO</span>';
+}
+function limitAlertHtml(c){
+  const usage=limitUsage(c);if(usage===null)return '';
+  const threshold=Number(data.store.limitAlertPct||80);if(usage<threshold)return '';
+  return `<span class="${usage>=100?'status block':'status warn'}">${usage}% DO LIMITE</span>`;
+}
+function upgradeDataV07(){
+  if(typeof data.clientSellingActivated==='undefined')data.clientSellingActivated=false;
+  data.clients.forEach(c=>{
+    if(typeof c.manualBlocked==='undefined')c.manualBlocked=!!c.blocked;
+    if(typeof c.autoBlocked==='undefined')c.autoBlocked=false;
+    if(typeof c.inviteStatus==='undefined')c.inviteStatus=c.connected?'accepted':'none';
+  });
+  data.movements.forEach(m=>{
+    if(typeof m.description==='undefined')m.description='';
+    if(typeof m.photo==='undefined')m.photo=null;
+    if(m.type==='opening'&&!m.openingDirection)m.openingDirection='debt';
+  });
+  reevaluateAllAutoBlocks(false);save();
+}
+
+function renderAll(){
+  applyStoreBranding();renderStoreConfig();renderKpis();renderQuickClients();renderClients();renderMovements();renderReferences();renderClientPreviewSelect();renderClientApp();renderAudit();renderFinance();
+}
+function renderKpis(){
+  const total=data.clients.reduce((s,c)=>s+Math.max(balance(c.id),0),0);
+  const now=new Date();
+  const rec=data.movements.filter(m=>m.type==='payment'&&m.status==='active').filter(m=>{const d=new Date(m.createdAt);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((s,m)=>s+m.amount,0);
+  const withBalance=data.clients.filter(c=>balance(c.id)>0).length;
+  const overdue=data.clients.filter(c=>balance(c.id)>0&&c.id==='c5').reduce((s,c)=>s+balance(c.id),0);
+  document.getElementById('kpiReceivable').textContent=money(total);document.getElementById('kpiReceived').textContent=money(rec);document.getElementById('kpiWithBalance').textContent=withBalance;document.getElementById('kpiOverdue').textContent=money(overdue);
+  const btn=document.getElementById('privacyBtn');if(btn)btn.textContent=data.privacyMode?'👁 Mostrar saldos':'👁 Ocultar saldos';
+  const sel=document.getElementById('limitAlertPct');if(sel)sel.value=String(data.store.limitAlertPct||80);
+}
+function renderQuickClients(){
+  const q=normalizeText(document.getElementById('quickSearch').value||'');
+  const list=data.clients.filter(c=>normalizeText(c.name+' '+(c.nickname||'')).includes(q)).slice(0,8);
+  const el=document.getElementById('quickClients');if(!list.length){el.innerHTML='<div class="empty">Nenhum cliente encontrado.</div>';return}
+  el.innerHTML=list.map(c=>{const b=balance(c.id),alert=limitAlertHtml(c);return `<div class="client" onclick="selectQuick('${c.id}')"><div class="client-left"><div class="avatar">${escapeHtml(c.name[0])}</div><div><h3>${escapeHtml(c.name)}${c.nickname?` <span style="color:#667085;font-weight:600">(${escapeHtml(c.nickname)})</span>`:''}</h3><small>${clientType(c)} • ${blockReasonText(c)}</small>${alert?`<div style="margin-top:5px">${alert}</div>`:''}</div></div><div class="right"><div class="money">${data.privacyMode?'••••••':balanceHtml(b)}</div><small>${'saldo'}</small></div></div>`}).join('');
+}
+function selectQuick(id){
+  if(data.selectedClientId && id && data.selectedClientId!==id && quickPendingPhoto) removeQuickPhoto();
+  data.selectedClientId=id;save();const c=getClient(id),box=document.getElementById('quickSelected'),amount=document.getElementById('quickAmount'),desc=document.getElementById('quickDescription'),btn=document.getElementById('quickAddBtn'),receiveBtn=document.getElementById('quickReceiveBtn'),confirmation=document.getElementById('quickConfirmation');if(confirmation)confirmation.classList.remove('show');
+  if(!c){box.innerHTML='<strong>Escolha um cliente</strong><span>Toque em um nome da lista abaixo.</span>';amount.disabled=false;desc.disabled=false;btn.disabled=false;btn.style.opacity='1';if(receiveBtn)receiveBtn.disabled=true;return}
+  if(receiveBtn)receiveBtn.disabled=false;
+  const b=balance(id),alert=limitAlertHtml(c);const limitText=c.limitMode==='free'?'limite do fiado: livre':`limite do fiado: ${money(c.limit)}`;
+  if(isBlocked(c)){box.innerHTML=`<strong>${escapeHtml(c.name)}</strong><span style="color:#ffd5d2;font-weight:800">${c.manualBlocked?'CRÉDITO BLOQUEADO MANUALMENTE':'CRÉDITO BLOQUEADO POR LIMITE'}</span><span style="display:block;margin-top:4px">${balanceText(b)}</span>`;amount.value='';desc.value='';amount.disabled=true;desc.disabled=true;btn.disabled=true;btn.style.opacity='.55';notify(`Fiado de ${c.name} está bloqueado.`);return}
+  box.innerHTML=`<strong>${escapeHtml(c.name)}</strong><span>${balanceText(b)} • ${limitText}</span>${b<0?`<span style="display:block;margin-top:4px">Crédito do cliente: ${money(-b)}</span>`:''}${alert?`<span style="display:block;margin-top:5px;color:#fff4c2;font-weight:800">⚠ ${limitUsage(c)}% do limite do fiado utilizado</span>`:''}`;
+  amount.disabled=false;desc.disabled=false;btn.disabled=false;btn.style.opacity='1';amount.focus();
+}
+function quickReceivePayment(){
+  const c=getClient(data.selectedClientId);
+  if(!c){notify('Selecione um cliente para receber o pagamento.');return}
+  openAction('payment',c.id);
+}
+function quickAdd(){
+  if(quickLock)return;const c=getClient(data.selectedClientId),amount=parseMoneyInput(document.getElementById('quickAmount').value),description=(document.getElementById('quickDescription').value||'').trim(),btn=document.getElementById('quickAddBtn');
+  if(!c){notify('Selecione um cliente.');return}if(isBlocked(c)){notify('Crédito bloqueado para este cliente.');return}if(amount<=0){notify('Informe um valor.');return}
+  const before=balance(c.id),capacity=chargeCapacity(c);
+  if(capacity!==null&&amount>capacity){if(!confirm(`Este lançamento fará o saldo devedor ultrapassar o limite do fiado de ${money(c.limit)}. Autorizar mesmo assim como proprietário?`))return;addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do limite do fiado.`)}
+  quickLock=true;btn.disabled=true;btn.style.opacity='.85';const hadPhoto=!!quickPendingPhoto;const movement=createMovement(c.id,'charge',amount,'',null,description,{photo:quickPendingPhoto});const after=balance(c.id);
+  const conf=document.getElementById('quickConfirmation');conf.innerHTML=`<div class="confirm-title">✓ LANÇAMENTO CONFIRMADO</div><div class="confirm-main">${escapeHtml(c.name)} — ${money(amount)}</div><div class="confirm-meta">Antes: ${balanceText(before)}<br><strong>Agora: ${balanceText(after)}</strong>${description?`<br>Descrição: ${escapeHtml(description)}`:''}${hadPhoto?'<br>📷 Foto da anotação anexada':''}<br>${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} • ${escapeHtml(data.store.name)}</div>${hadPhoto?'':`<div style="margin-top:10px"><button class="btn btn-light btn-small" type="button" onclick="triggerMovementPhoto('${movement.id}')">📷 Adicionar foto agora</button></div>`}`;conf.classList.add('show');btn.textContent=`✓ ${money(amount)} LANÇADO`;
+  const usage=limitUsage(c),threshold=Number(data.store.limitAlertPct||80);if(usage!==null&&usage>=threshold)notify(`Alerta interno: ${c.name} atingiu ${usage}% do limite.`);else notify(c.connected?'Lançamento confirmado e notificação simulada enviada ao cliente.':'Lançamento confirmado.');
+  setTimeout(()=>{quickLock=false;data.selectedClientId=null;save();document.getElementById('quickAmount').value='';document.getElementById('quickDescription').value='';removeQuickPhoto();document.getElementById('quickSelected').innerHTML='<strong>Escolha um cliente</strong><span>Toque em um nome da lista abaixo.</span>';btn.disabled=false;btn.style.opacity='1';btn.textContent='PÕE NA CONTA';const receiveBtn=document.getElementById('quickReceiveBtn');if(receiveBtn)receiveBtn.disabled=true;renderQuickClients();},2200);
+}
+function createMovement(clientId,type,amount,note,ref=null,description='',extra={}){
+  const id='mov-'+Date.now()+'-'+Math.floor(Math.random()*1000);const m={id,clientId,type,amount,createdAt:new Date().toISOString(),user:(data.currentUser?.name||'Usuário'),ref,note:note||'',description:description||'',photo:null,status:'active',...extra};data.movements.push(m);const c=getClient(clientId);const action=type==='charge'?'LANÇAMENTO':type==='payment'?'PAGAMENTO':type==='opening'?'SALDO DE ABERTURA':'ESTORNO';addAudit(action,`${money(amount)} • ${c.name}${description?` • ${description}`:''}${ref?` • referência ${ref}`:''}`);reevaluateAutoBlock(c,true);save();renderAll();return m;
+}
+function renderClients(){
+  const q=normalizeText(document.getElementById('clientSearch').value||''),f=document.getElementById('clientFilter').value;const rows=data.clients.filter(c=>{const match=normalizeText(c.name+' '+(c.nickname||'')).includes(q);if(!match)return false;if(f==='balance')return balance(c.id)>0;if(f==='blocked')return isBlocked(c);if(f==='connected')return c.connected;if(f==='traditional')return !c.connected;return true});
+  document.getElementById('clientsBody').innerHTML=rows.map(c=>{const b=balance(c.id);return `<tr><td><strong>${escapeHtml(c.name)}</strong><div class="mini-note">${escapeHtml(c.nickname||'')}</div></td><td>${clientType(c)}${c.inviteStatus==='pending'?'<div class="mini-note">convite pendente</div>':''}</td><td><span class="internal-badge">INTERNO</span> ${c.limitMode==='free'?'Livre':money(c.limit)}</td><td>${statusFor(c)} ${limitAlertHtml(c)}</td><td class="right">${balanceHtml(b)}</td><td class="right"><button class="btn btn-light btn-small" onclick="openClient('${c.id}')">Abrir</button></td></tr>`}).join('');
+}
+function renderMovements(){
+  const q=normalizeText(document.getElementById('movementSearch').value||'');
+  const f=document.getElementById('movementType').value;
+  const rows=[...data.movements]
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+    .filter(m=>{
+      const c=getClient(m.clientId);
+      return normalizeText(c?.name||'').includes(q)&&(f==='all'||m.type===f);
+    });
+
+  document.getElementById('movementsBody').innerHTML=rows.map(m=>{
+    const c=getClient(m.clientId);
+    const label=m.type==='charge'?'Lançamento':m.type==='payment'?'Pagamento':m.type==='opening'?'Saldo inicial':'Estorno';
+    const isDebit=m.type==='charge'||(m.type==='opening'&&m.openingDirection!=='credit');
+    const cls=isDebit?'positive':'negative';
+    const effect=m.type==='charge'?'Débito':m.type==='payment'?'Pagamento':m.type==='reversal'?'Estorno':isDebit?'Saldo inicial':'Em haver';
+    const reversal=data.movements.find(x=>x.type==='reversal'&&x.ref===m.id&&x.status==='active');
+    const canReverse=m.type==='charge'&&!reversal;
+    const desc=m.description?`<span class="description-pill" title="${escapeHtml(m.description)}">${escapeHtml(m.description)}</span>`:'—';
+    const photo=m.photo
+      ? `<div class="photo-actions"><img class="ref-photo" src="${m.photo}" alt="Anexo"><button class="btn btn-light btn-small" onclick="viewMovementPhoto('${m.id}')">Ver</button></div>`
+      : (m.type==='charge'?`<button class="btn btn-light btn-small" onclick="triggerMovementPhoto('${m.id}')">📷 Anexar</button>`:'—');
+
+    let reference='—';
+    if(m.type==='payment'){
+      reference=m.note?escapeHtml(m.note):'—';
+    }else if(m.type==='reversal'){
+      reference=m.ref?`Origem: <code>${escapeHtml(m.ref)}</code>`:'—';
+      if(m.note) reference+=`<div class="mini-note">Motivo: ${escapeHtml(m.note)}</div>`;
+    }else if(m.ref){
+      reference=`Origem: <code>${escapeHtml(m.ref)}</code>`;
+    }
+
+    const actions=reversal
+      ? '<span class="status block">ESTORNADO</span>'
+      : canReverse
+        ? `<button class="btn btn-warn btn-small" onclick="reverseMovement('${m.id}')">Estornar</button>`
+        : '—';
+
+    return `<tr>
+      <td><code>${m.id}</code></td>
+      <td>${dt(m.createdAt)}</td>
+      <td>${escapeHtml(c?.name||'—')}</td>
+      <td>${label}</td>
+      <td>${desc}</td>
+      <td>${escapeHtml(m.user)}</td>
+      <td class="movement-reference">${reference}</td>
+      <td>${photo}</td>
+      <td class="right ${cls}"><div class="movement-value"><span class="movement-effect">${effect}</span><span class="movement-amount">${money(m.amount)}</span></div></td>
+      <td class="right movement-actions">${actions}</td>
+    </tr>`;
+  }).join('');
+}
+function renderReferences(){
+  const body=document.getElementById('referencesBody');if(!body)return;
+  const q=document.getElementById('referenceSearch')?.value||'',cq=normalizeText(document.getElementById('referenceClientSearch')?.value||'');
+  const rows=[...data.movements]
+    .filter(m=>m.type==='charge'&&m.status==='active'&&((m.description||'').trim()||m.photo))
+    .filter(m=>!q.trim()||fuzzyMatch(m.description||'',q))
+    .filter(m=>normalizeText(getClient(m.clientId)?.name||'').includes(cq))
+    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  body.innerHTML=rows.length?rows.map(m=>{
+    const c=getClient(m.clientId),desc=(m.description||'').trim()?escapeHtml(m.description):'<span class="mini-note">Sem descrição</span>';
+    const photo=m.photo?`<div class="photo-actions"><img class="ref-photo" src="${m.photo}" alt="Foto da anotação"><button class="btn btn-light btn-small" onclick="viewMovementPhoto('${m.id}')">Ver foto</button></div>`:'<span class="mini-note">Sem foto</span>';
+    return `<tr><td>${dt(m.createdAt)}</td><td><strong>${escapeHtml(c?.name||'—')}</strong></td><td>${desc}</td><td>${photo}</td><td class="right"><strong>${money(m.amount)}</strong></td></tr>`;
+  }).join(''):'<tr><td colspan="5"><div class="empty">Nenhuma referência encontrada.</div></td></tr>';
+}
+function openClient(id){
+  const c=getClient(id);
+  if(!c){notify('Cliente não encontrado.');return}
+  const b=balance(id),movements=[...data.movements].filter(m=>m.clientId===id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));document.getElementById('clientModalTitle').textContent=c.name;
+  const inviteButton=!c.connected?`<button class="btn btn-light" onclick="openInvite('${id}')">📲 Convidar para acompanhar</button>`:'';
+  document.getElementById('clientModalBody').innerHTML=`<div class="detail-hero"><div><div class="mini-note">${'Saldo'}</div><div class="big">${balanceHtml(b)}</div><div class="mini-note">${clientType(c)} • ${escapeHtml(c.phone||'sem telefone cadastrado')}</div></div><div>${statusFor(c)} ${limitAlertHtml(c)}</div></div><div class="form-grid"><button class="btn btn-primary" onclick="openAction('charge','${id}')">+ Põe na Conta</button><button class="btn btn-dark" onclick="openAction('payment','${id}')">Receber pagamento</button><button class="btn btn-light" onclick="editLimit('${id}')">Alterar limite do fiado</button><button class="btn ${c.manualBlocked?'btn-light':'btn-danger'}" onclick="toggleBlock('${id}')">${c.manualBlocked?'Desbloquear manualmente':'Bloquear manualmente'}</button>${inviteButton}</div><div class="split-info"><div><small>Saldo</small>${balanceHtml(b)}</div><div><small>Limite do fiado</small><strong>${c.limitMode==='free'?'Livre':money(c.limit)}</strong></div></div>${b<0?`<div class="info-strip">Em haver: <strong>${money(-b)}</strong>. Esse valor será usado nos próximos lançamentos.</div>`:''}<div class="divider"></div><div class="activity">${movements.length?movements.map(m=>`<div class="activity-item"><div class="dot"></div><div style="flex:1"><strong>${m.type==='charge'?'Lançamento':m.type==='payment'?'Pagamento':m.type==='opening'?'Saldo inicial':'Estorno'} • ${money(m.amount)}</strong>${m.description?`<div class="mini-note">Descrição: ${escapeHtml(m.description)}</div>`:''}<div class="mini-note">${dt(m.createdAt)} • ${escapeHtml(m.user)}${m.ref?` • ref. ${escapeHtml(m.ref)}`:''}${m.photo?' • 📷 foto anexada':''}</div></div></div>`).join(''):'<div class="empty">Sem movimentações.</div>'}</div><div class="divider"></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong>Excluir cliente</strong><div class="mini-note">Confirme antes de excluir. O sistema alerta se houver Fiado ou valor Em haver.</div></div><button class="btn btn-danger" onclick="deleteClient('${id}')">🗑 Excluir cliente</button></div>`;showModal('clientModal');
+}
+function deleteClient(id){
+  const c=getClient(id);
+  if(!c){notify('Cliente não encontrado.');return}
+
+  const b=balance(id);
+  const movementCount=data.movements.filter(m=>m.clientId===id).length;
+  let balanceWarning='Este cliente está sem saldo pendente.';
+  if(b>0) balanceWarning=`⚠ ATENÇÃO: ${c.name} tem ${money(b)} em FIADO.`;
+  if(b<0) balanceWarning=`⚠ ATENÇÃO: ${c.name} tem ${money(-b)} EM HAVER.`;
+
+  const message=`Deseja realmente excluir ${c.name}?
+
+${balanceWarning}
+
+A exclusão removerá o cadastro e ${movementCount===1?'1 movimentação':movementCount+' movimentações'} do histórico deste cliente neste protótipo. Esta ação não pode ser desfeita.`;
+  if(!confirm(message)) return;
+
+  const balanceSummary=b>0?`${money(b)} em fiado`:b<0?`${money(-b)} em haver`:'sem saldo pendente';
+  addAudit('CLIENTE EXCLUÍDO',`${c.name} • ${balanceSummary} • ${movementCount} movimentação(ões) removida(s).`);
+
+  data.movements=data.movements.filter(m=>m.clientId!==id);
+  data.clients=data.clients.filter(x=>x.id!==id);
+  if(data.clientExternalStores && Object.prototype.hasOwnProperty.call(data.clientExternalStores,id)) delete data.clientExternalStores[id];
+  if(data.selectedClientId===id) data.selectedClientId=null;
+  if(actionState?.clientId===id) actionState=null;
+
+  save();
+  closeModal('clientModal');
+  renderAll();
+  selectQuick(null);
+  notify(`${c.name} foi excluído.`);
+}
+function openAction(type,clientId){
+  actionState={type,clientId};
+  const c=getClient(clientId);
+  const body=document.querySelector('#actionModal .modal-body');
+  const footer=document.querySelector('#actionModal .modal-footer');
+  if(body)body.innerHTML=`
+    <div class="form-grid">
+      <div class="form-row span-2"><label>Valor</label><input id="actionAmount" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" /></div>
+      <div class="form-row span-2" id="actionDescriptionRow"><label>Descrição do lançamento (opcional)</label><input id="actionDescription" maxlength="120" placeholder="Ex.: Produto tal, serviço tal" /></div>
+      <div class="form-row span-2" id="actionNoteRow"><label>Como pagou? (opcional)</label><input id="actionNote" placeholder="Ex.: Pix, dinheiro, cartão" /></div>
+    </div>`;
+  if(footer)footer.innerHTML=`<button class="btn btn-light" onclick="closeModal('actionModal')">Cancelar</button><button class="btn btn-primary" onclick="confirmAction()">Confirmar</button>`;
+  document.getElementById('actionTitle').textContent=type==='charge'?`Põe na Conta — ${c.name}`:`Receber de ${c.name}`;
+  document.getElementById('actionDescriptionRow').style.display=type==='charge'?'grid':'none';
+  document.getElementById('actionNoteRow').style.display=type==='payment'?'grid':'none';
+  document.getElementById('actionAmount').value='';
+  document.getElementById('actionDescription').value='';
+  document.getElementById('actionNote').value='';
+  closeModal('clientModal');
+  showModal('actionModal');
+}
+function confirmAction(){
+  if(!actionState)return;const c=getClient(actionState.clientId),amount=parseMoneyInput(document.getElementById('actionAmount').value),note=document.getElementById('actionNote').value.trim(),description=document.getElementById('actionDescription').value.trim();if(amount<=0){notify('Informe um valor.');return}
+  if(actionState.type==='charge'){
+    if(isBlocked(c)){notify('Fiado bloqueado para este cliente.');return}
+    const cap=chargeCapacity(c);
+    if(cap!==null&&amount>cap){
+      if(!confirm(`Este lançamento passa do limite do fiado de ${money(c.limit)}.\n\nAutorizar mesmo assim?`))return;
+      addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do limite do fiado.`);
+    }
+  }else{
+    const b=balance(c.id);
+    const after=b-amount;
+    if(after<0){
+      const fiadoAtual=Math.max(b,0);
+      const haver=Math.abs(after);
+      if(!confirm(`O pagamento é maior que o fiado de ${c.name}.\n\nFiado atual: ${money(fiadoAtual)}\nPagamento: ${money(amount)}\n${c.name} ficará com ${money(haver)} em haver.\n\nConfirmar pagamento?`))return;
+    }
+  }
+  createMovement(c.id,actionState.type,amount,note,null,actionState.type==='charge'?description:'');const newBalance=balance(c.id),was=actionState.type;closeModal('actionModal');notify(was==='charge'?`${money(amount)} colocado na conta de ${c.name}.`:`Pagamento recebido. ${balanceText(newBalance)}.`);actionState=null;
+}
+function reverseMovement(id){
+  const m=data.movements.find(x=>x.id===id);if(!m||m.type!=='charge')return;if(data.movements.some(x=>x.type==='reversal'&&x.ref===id&&x.status==='active')){notify('Este lançamento já foi estornado.');return}const c=getClient(m.clientId);reversalState={movementId:id};document.getElementById('reversalModalTitle').textContent='⚠ Confirmar estorno';document.getElementById('reversalModalSubtitle').textContent='Confira o lançamento antes de concluir. O registro original permanecerá no histórico.';document.getElementById('reversalModalBody').innerHTML=`<div class="reversal-warning"><h4>Você está prestes a estornar este lançamento:</h4><div class="reversal-line"><span>Cliente</span><strong>${escapeHtml(c.name)}</strong></div><div class="reversal-line"><span>Valor</span><strong>${money(m.amount)}</strong></div>${m.description?`<div class="reversal-line"><span>Descrição</span><strong>${escapeHtml(m.description)}</strong></div>`:''}<div class="reversal-line"><span>Data/hora</span><strong>${dt(m.createdAt)}</strong></div><div class="reversal-line"><span>Lançamento original</span><strong>${m.id}</strong></div><div class="reversal-line"><span>Saldo atual</span><strong>${balanceText(balance(c.id))}</strong></div></div><div class="form-row"><label>Motivo do estorno *</label><input id="reversalReason" placeholder="Ex.: valor digitado incorretamente" /></div><div class="info-strip">O lançamento original não será apagado. Será criada uma movimentação de estorno vinculada a ele.</div>`;document.getElementById('reversalModalFooter').innerHTML='<button class="btn btn-light" onclick="cancelReversal()">Cancelar</button><button class="btn btn-danger" onclick="confirmReversal()">CONFIRMAR ESTORNO</button>';showModal('reversalModal');
+}
+function confirmReversal(){
+  if(!reversalState)return;const m=data.movements.find(x=>x.id===reversalState.movementId);if(!m)return;if(data.movements.some(x=>x.type==='reversal'&&x.ref===m.id&&x.status==='active')){notify('Este lançamento já foi estornado.');closeModal('reversalModal');reversalState=null;return}const reason=(document.getElementById('reversalReason')?.value||'').trim();if(!reason){notify('Informe o motivo do estorno.');document.getElementById('reversalReason')?.focus();return}const c=getClient(m.clientId),before=balance(c.id);createMovement(m.clientId,'reversal',m.amount,reason,m.id);const after=balance(c.id);addAudit('ESTORNO CONFIRMADO',`${c.name}: ${money(m.amount)} estornado. Motivo: ${reason}. Lançamento original: ${m.id}.`);document.getElementById('reversalModalTitle').textContent='Estorno concluído';document.getElementById('reversalModalSubtitle').textContent='A operação foi registrada e vinculada ao lançamento original.';document.getElementById('reversalModalBody').innerHTML=`<div class="reversal-success"><div class="icon">✅</div><h3>ESTORNO REALIZADO</h3><div class="amount">${money(m.amount)}</div><p><strong>${escapeHtml(c.name)}</strong></p><p>Antes: ${balanceText(before)}</p><p><strong>Agora: ${balanceText(after)}</strong></p><p>Lançamento original: ${m.id}</p><p>Motivo: ${escapeHtml(reason)}</p></div><div class="info-strip">O lançamento original continua visível no histórico, junto com este estorno.</div>`;document.getElementById('reversalModalFooter').innerHTML='<button class="btn btn-primary" onclick="finishReversal()">Fechar</button>';reversalState=null;save();renderAll();
+}
+function toggleBlock(id){
+  const c=getClient(id);c.manualBlocked=!c.manualBlocked;addAudit(c.manualBlocked?'BLOQUEIO MANUAL':'DESBLOQUEIO MANUAL',`${c.name}: crédito ${c.manualBlocked?'bloqueado':'desbloqueado'} manualmente.`);save();renderAll();closeModal('clientModal');notify(`Fiado de ${c.name} ${c.manualBlocked?'bloqueado manualmente':'desbloqueado manualmente'}.`);
+}
+function editLimit(id){
+  const c=getClient(id),current=c.limitMode==='free'?'livre':(c.limit/100).toFixed(2).replace('.',','),v=prompt(`Digite o novo limite em reais ou escreva "livre".\nAtual: ${current}`,current);if(v===null)return;const old=c.limitMode==='free'?'livre':money(c.limit);if(v.trim().toLowerCase()==='livre'){c.limitMode='free';c.limit=null}else{const cents=parseMoneyInput(v);if(cents<=0){notify('Limite inválido.');return}c.limitMode='fixed';c.limit=cents}reevaluateAutoBlock(c,true);addAudit('ALTERAÇÃO DE LIMITE',`${c.name}: ${old} → ${c.limitMode==='free'?'livre':money(c.limit)}.`);save();renderAll();closeModal('clientModal');notify('Limite atualizado.');
+}
+function toggleOpeningBalance(){}
+function saveNewClient(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){notify('Informe o nome.');return}
+  const mode=document.getElementById('newLimitMode').value;
+  const limit=mode==='fixed'?parseMoneyInput(document.getElementById('newLimit').value):null;
+  if(mode==='fixed'&&limit<=0){notify('Informe o limite do fiado.');return}
+  const openingBalance=parseMoneyInput(document.getElementById('newOpeningBalance').value);
+  const openingMode=openingBalance>0?'informed':'zero';
+  const c={
+    id:'c'+Date.now(),
+    name,
+    nickname:document.getElementById('newNickname').value.trim(),
+    phone:document.getElementById('newPhone').value.trim(),
+    connected:false,
+    inviteStatus:'none',
+    limitMode:mode,
+    limit,
+    manualBlocked:false,
+    autoBlocked:false,
+    dueDay:5,
+    openingMode
+  };
+  data.clients.push(c);
+  if(openingBalance>0){
+    data.movements.push({
+      id:'mov-'+Date.now(),
+      clientId:c.id,
+      type:'opening',
+      amount:openingBalance,
+      openingDirection:'debt',
+      createdAt:new Date().toISOString(),
+      user:(data.currentUser?.name||'Usuário'),
+      ref:null,
+      note:'Saldo devedor inicial informado no cadastro',
+      description:'',
+      photo:null,
+      status:'active'
+    });
+  }
+  reevaluateAutoBlock(c,false);
+  addAudit('CLIENTE CRIADO',`${c.name} • sem app • ${c.limitMode==='free'?'sem limite':'limite do fiado '+money(c.limit)}${openingBalance>0?' • saldo inicial '+money(openingBalance):''}.`);
+  save();
+  renderAll();
+  closeModal('newClientModal');
+  ['newName','newNickname','newPhone','newLimit','newOpeningBalance'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newLimitMode').value='free';
+  toggleNewLimit();
+  notify(`${c.name} cadastrado.`);
+}
+function renderFinance(){
+  const alertsEl=document.getElementById('limitAlerts'),body=document.getElementById('financeClientsBody');if(!alertsEl||!body)return;const threshold=Number(data.store.limitAlertPct||80),alerts=data.clients.filter(c=>{const u=limitUsage(c);return u!==null&&u>=threshold}).sort((a,b)=>(limitUsage(b)||0)-(limitUsage(a)||0));alertsEl.innerHTML=alerts.length?alerts.map(c=>{const usage=limitUsage(c),b=balance(c.id);return `<div class="limit-alert ${usage>=100?'danger':''}"><div><strong>${escapeHtml(c.name)}</strong><div class="mini-note">${balanceText(b)} • limite do fiado ${money(c.limit)}</div></div><span class="${usage>=100?'status block':'status warn'}">${usage}% DO LIMITE</span></div>`}).join(''):`<div class="empty">Nenhum cliente chegou a ${threshold}% do limite do fiado.</div>`;
+  body.innerHTML=data.clients.map(c=>{const b=balance(c.id),usage=limitUsage(c);return `<tr><td><strong>${escapeHtml(c.name)}</strong></td><td>${balanceHtml(b)}${b<0?`<div class="mini-note">Crédito do cliente: ${money(-b)}</div>`:''}</td><td>${openingText(c)}</td><td>${c.limitMode==='free'?'Livre':money(c.limit)}</td><td>${usage===null?'—':usage+'%'}</td><td>${statusFor(c)} ${limitAlertHtml(c)}</td></tr>`}).join('');
+}
+function renderSelectedClientStore(){
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected),el=document.getElementById('previewStoreDetail');if(!c||!el)return;
+  const stores=getClientStores(c);let store=stores.find(s=>s.id===selectedClientStoreId)||stores[0];selectedClientStoreId=store.id;
+  const indexed=(store.movements||[]).map((m,i)=>({m,i})).sort((a,b)=>new Date(b.m.createdAt)-new Date(a.m.createdAt));
+  const logo=store.logo?`<img src="${store.logo}" alt="Logo de ${escapeHtml(store.name)}">`:initials(store.name),sb=store.balance||0;
+  el.innerHTML=`<div class="store-detail-head"><div class="row"><div class="store-detail-title"><div class="store-logo" style="background:${themeColor(store.theme)}">${logo}</div><div><strong>${escapeHtml(store.name)}</strong><div class="mini-note">Histórico deste comércio</div></div></div><div class="money">${balanceHtml(sb)}</div></div></div>${indexed.length?indexed.map(({m,i})=>{const charge=(m.type==='charge'||(m.type==='opening'&&m.openingDirection!=='credit')),label=m.type==='payment'?'Pagamento recebido':m.type==='reversal'?'Estorno':m.type==='opening'?'Saldo inicial':'Novo lançamento',photo=m.photo?`<button class="btn btn-light btn-small" style="margin-top:7px" onclick="viewClientReferencePhoto('${store.id}',${i})">📷 Ver foto</button>`:'';return `<div class="store-card"><div class="row"><div><strong>${label}</strong><div class="mini-note">${dt(m.createdAt)}${m.description?` • ${escapeHtml(m.description)}`:''}</div>${photo}</div><div class="${charge?'positive':'negative'}">${charge?'+':'−'} ${money(m.amount)}</div></div></div>`}).join(''):'<div class="empty">Sem movimentações.</div>'}`;
+}
+function renderClientApp(){
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected);if(!c)return;document.getElementById('previewName').textContent=c.name.split(' ')[0];const stores=getClientStores(c),total=stores.reduce((s,x)=>s+Math.max(x.balance||0,0),0);document.getElementById('previewTotal').textContent=money(total);const totalLabel=document.querySelector('.client-head div[style*="margin-top:10px"]');if(totalLabel)totalLabel.textContent='MEU FIADO';if(!selectedClientStoreId||!stores.some(s=>s.id===selectedClientStoreId))selectedClientStoreId=stores[0]?.id||null;document.getElementById('previewStoreList').innerHTML=stores.map(store=>{const logo=store.logo?`<img src="${store.logo}" alt="Logo de ${escapeHtml(store.name)}">`:initials(store.name),note='Conta no Põe na Conta';return `<button class="customer-store" type="button" onclick="selectClientStore('${store.id}')"><div class="store-ident"><div class="store-logo" style="background:${themeColor(store.theme)}">${logo}</div><div><strong>${escapeHtml(store.name)}</strong><div class="mini-note">${note}</div></div></div><div class="right"><div class="money">${balanceHtml(store.balance||0)}</div><small>ver conta ›</small></div></button>`}).join('');renderClientReferences();setClientView(clientViewMode);
+}
+
+function renderClientReferences(){
+  const body=document.getElementById('clientReferencesBody');if(!body)return;
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected);if(!c){body.innerHTML='<tr><td colspan="5"><div class="empty">Nenhum cliente conectado selecionado.</div></td></tr>';return}
+  const q=document.getElementById('clientReferenceSearch')?.value||'';
+  const refs=[];
+  getClientStores(c).forEach(store=>{
+    (store.movements||[]).forEach((m,i)=>{
+      if(m.type==='charge'&&((m.description||'').trim()||m.photo)&&(!q.trim()||fuzzyMatch(m.description||'',q)))refs.push({store,m,i});
+    });
+  });
+  refs.sort((a,b)=>new Date(b.m.createdAt)-new Date(a.m.createdAt));
+  body.innerHTML=refs.length?refs.map(({store,m,i})=>{
+    const desc=(m.description||'').trim()?escapeHtml(m.description):'<span class="mini-note">Sem descrição</span>';
+    const photo=m.photo?`<div class="photo-actions"><img class="ref-photo" src="${m.photo}" alt="Foto da anotação"><button class="btn btn-light btn-small" onclick="viewClientReferencePhoto('${store.id}',${i})">Ver foto</button></div>`:'<span class="mini-note">Sem foto</span>';
+    return `<tr><td>${dt(m.createdAt)}</td><td><strong>${escapeHtml(store.name)}</strong></td><td>${desc}</td><td>${photo}</td><td class="right"><strong>${money(m.amount)}</strong></td></tr>`;
+  }).join(''):'<tr><td colspan="5"><div class="empty">Nenhuma referência encontrada nas suas contas.</div></td></tr>';
+}
+function viewClientReferencePhoto(storeId,index){
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected);if(!c)return;
+  const store=getClientStores(c).find(s=>s.id===storeId),m=store?.movements?.[index];
+  if(!m?.photo){notify('Esta referência não possui foto.');return}
+  document.getElementById('photoModalImage').src=m.photo;showModal('photoModal');
+}
+
+function triggerMovementPhoto(id){photoTargetMovementId=id;const input=document.getElementById('movementPhotoInput');input.value='';input.click()}
+function handleMovementPhoto(event){
+  const file=event.target.files&&event.target.files[0];if(!file||!photoTargetMovementId)return;if(!file.type.startsWith('image/')){notify('Selecione uma imagem.');return}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);const m=data.movements.find(x=>x.id===photoTargetMovementId);if(!m)return;m.photo=canvas.toDataURL('image/jpeg',.72);addAudit('FOTO ANEXADA',`${getClient(m.clientId)?.name||'Cliente'}: foto de referência anexada ao lançamento ${m.id}.`);save();renderAll();const conf=document.getElementById('quickConfirmation');if(conf&&conf.classList.contains('show')){const btn=conf.querySelector('button');if(btn){btn.textContent='✓ Foto anexada';btn.disabled=true}}notify('Foto anexada ao lançamento.');photoTargetMovementId=null};img.src=reader.result};reader.readAsDataURL(file);
+}
+function viewMovementPhoto(id){const m=data.movements.find(x=>x.id===id);if(!m?.photo){notify('Este lançamento não possui foto.');return}document.getElementById('photoModalImage').src=m.photo;showModal('photoModal')}
+
+function inviteToken(c){return (c.inviteToken||(c.inviteToken='PNC-'+Math.random().toString(36).slice(2,8).toUpperCase()))}
+function openInvite(id){
+  inviteClientId=id;const c=getClient(id);if(!c)return;const token=inviteToken(c);document.getElementById('inviteModalBody').innerHTML=`<div class="invite-card"><strong>${escapeHtml(c.name)}</strong><div class="mini-note">${escapeHtml(c.phone||'Telefone ainda não informado')}</div></div><div class="form-row" style="margin-top:14px"><label>Celular para o convite (opcional neste protótipo)</label><input id="invitePhone" value="${escapeHtml(c.phone||'')}" placeholder="(41) 99999-9999"></div><div class="info-strip">A mensagem não mostra saldo nem dívida. O cliente só passa a enxergar a conta depois de autenticar-se e confirmar o vínculo.</div><div id="inviteQrArea" style="display:none"><div class="qr-demo" id="inviteQrDemo"></div><div class="mini-note" style="text-align:center">QR demonstrativo do protótipo • código ${token}</div></div>`;document.getElementById('inviteModalFooter').innerHTML='<button class="btn btn-light" onclick="shareInvite()">Compartilhar convite</button><button class="btn btn-light" onclick="showInviteQr()">Mostrar QR Code</button><button class="btn btn-primary" onclick="simulateInviteAcceptance()">Simular aceite do cliente</button>';closeModal('clientModal');showModal('inviteModal');
+}
+function shareInvite(){
+  const c=getClient(inviteClientId);if(!c)return;const phone=(document.getElementById('invitePhone')?.value||'').trim();if(phone)c.phone=phone;c.inviteStatus='pending';const text=`${data.store.name} convidou você para acompanhar sua conta no Põe na Conta. Convite: ${inviteToken(c)}. O saldo não é enviado nesta mensagem.`;save();renderAll();if(navigator.share){navigator.share({title:'Convite Põe na Conta',text}).catch(()=>{})}else{prompt('Copie esta mensagem e envie ao cliente:',text)}notify('Convite preparado sem expor o saldo.');
+}
+function showInviteQr(){const c=getClient(inviteClientId);if(!c)return;c.inviteStatus='pending';save();const area=document.getElementById('inviteQrArea'),grid=document.getElementById('inviteQrDemo');area.style.display='block';const seedText=inviteToken(c);let n=0;for(const ch of seedText)n=(n*31+ch.charCodeAt(0))>>>0;let html='';for(let i=0;i<289;i++){n=(1664525*n+1013904223)>>>0;html+=`<span class="${(n>>>30)&1?'':'off'}"></span>`}grid.innerHTML=html;notify('QR demonstrativo exibido. No app real será um convite seguro e escaneável.');}
+function simulateInviteAcceptance(){const c=getClient(inviteClientId);if(!c)return;c.connected=true;c.inviteStatus='accepted';addAudit('CLIENTE CONECTADO',`${c.name} aceitou o convite e vinculou sua identidade ao estabelecimento.`,'Sistema');save();renderAll();closeModal('inviteModal');closeModal('clientModal');notify(`${c.name} agora é cliente conectado.`);inviteClientId=null}
+
+function activateView(viewId){if(viewId==='clientapp')viewId='dashboard';document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===viewId));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===viewId));}
+function openProfileModal(){
+  const statusText=onlineContext.establishmentStatus==='test'?'TESTE':onlineContext.establishmentStatus==='active'?'ATIVO':'—';
+  const statusClass=onlineContext.establishmentStatus==='test'?'warn':'ok';
+  document.getElementById('profileModalBody').innerHTML=`
+    <div class="profile-choice active">
+      <div>
+        <strong>👤 ${escapeHtml(data.currentUser?.name||'Usuário')}</strong>
+        <div class="mini-note">${escapeHtml(data.currentUser?.role||'Comerciante')} • usuário logado</div>
+      </div>
+      <span class="status ${statusClass}">${statusText}</span>
+    </div>
+    <div class="profile-choice">
+      <div>
+        <strong>🏪 ${escapeHtml(data.store.name)}</strong>
+        <div class="mini-note">Nome do negócio que os clientes verão${onlineContext.establishmentCode?` • ${escapeHtml(onlineContext.establishmentCode)}`:''}</div>
+      </div>
+    </div>
+    <div class="info-strip">Seu acesso, clientes e movimentações são validados e gravados online. As fotos ainda permanecem neste aparelho nesta etapa do piloto.</div>
+    <div style="margin-top:14px">
+      <button class="btn btn-danger" style="width:100%" type="button" onclick="logoutOnline()">Sair da conta</button>
+    </div>`;
+  showModal('profileModal')
+}
+function openClientProfileDemo(){closeModal('profileModal');notify('A Visão do Cliente não está disponível nesta versão do comerciante.')}
+function openSellModal(){document.getElementById('sellModalBody').innerHTML=data.clientSellingActivated?'<div class="reversal-success"><div class="icon">🏪</div><h3>PERFIL PARA RECEBER ATIVADO</h3><p>A mesma conta agora pode atuar como cliente e como estabelecimento.</p></div>':'<div class="invite-card"><strong>Quero vender fiado</strong><p style="margin:8px 0 0;font-size:13px;color:#475467">Esta opção fica discreta no perfil do cliente. Ao ativar, a mesma conta ganha um perfil de proprietário/estabelecimento — sem instalar outro aplicativo e sem criar outro login.</p></div><div class="form-row" style="margin-top:14px"><label>Nome do estabelecimento / atividade</label><input id="sellStoreName" placeholder="Ex.: Lanches do João"></div>';document.getElementById('sellModalFooter').innerHTML=data.clientSellingActivated?'<button class="btn btn-primary" onclick="closeModal(\'sellModal\')">Fechar</button>':'<button class="btn btn-light" onclick="closeModal(\'sellModal\')">Agora não</button><button class="btn btn-primary" onclick="activateSellingProfileDemo()">Ativar perfil para receber</button>';showModal('sellModal')}
+function activateSellingProfileDemo(){const n=(document.getElementById('sellStoreName')?.value||'').trim();if(!n){notify('Informe um nome para o estabelecimento ou atividade.');return}data.clientSellingActivated=true;addAudit('NOVO PERFIL',`Perfil de estabelecimento ativado no mesmo login: ${n}.`,'Sistema');save();openSellModal();notify('Perfil de estabelecimento ativado na demonstração.')}
+
+
+
+/* ===== PÕE NA CONTA — PATCH v0.12: identidade do estabelecimento na visão do cliente ===== */
+function themeRgba(theme,alpha){
+  const hex=themeColor(theme).replace('#','');
+  const full=hex.length===3?hex.split('').map(x=>x+x).join(''):hex;
+  const r=parseInt(full.slice(0,2),16),g=parseInt(full.slice(2,4),16),b=parseInt(full.slice(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function clientStoreLogoHtml(store,small=false){
+  const logo=store.logo?`<img src="${store.logo}" alt="Logo de ${escapeHtml(store.name)}">`:initials(store.name);
+  const cls=small?'store-logo':'store-logo';
+  return `<div class="${cls}" style="background:${themeColor(store.theme)}">${logo}</div>`;
+}
+renderSelectedClientStore=function(){
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected),el=document.getElementById('previewStoreDetail');
+  if(!c||!el)return;
+  const stores=getClientStores(c);let store=stores.find(s=>s.id===selectedClientStoreId)||stores[0];
+  if(!store)return;
+  selectedClientStoreId=store.id;
+  const indexed=(store.movements||[]).map((m,i)=>({m,i})).sort((a,b)=>new Date(b.m.createdAt)-new Date(a.m.createdAt));
+  const sb=store.balance||0,color=themeColor(store.theme);
+  el.innerHTML=`
+    <div class="store-detail-head brand-theme" style="--store-color:${color};background:${color}">
+      <div class="row">
+        <div class="store-detail-title">
+          ${clientStoreLogoHtml(store)}
+          <div><strong>${escapeHtml(store.name)}</strong><div class="mini-note">Sua conta neste estabelecimento</div><div class="brand-note">Identidade visual definida pelo estabelecimento</div></div>
+        </div>
+        <div class="money">${balanceHtml(sb)}</div>
+      </div>
+    </div>
+    ${indexed.length?indexed.map(({m,i})=>{
+      const charge=(m.type==='charge'||(m.type==='opening'&&m.openingDirection!=='credit')),
+        label=m.type==='payment'?'Pagamento recebido':m.type==='reversal'?'Estorno':m.type==='opening'?'Saldo inicial':'Novo lançamento',
+        photo=m.photo?`<button class="btn btn-light btn-small" style="margin-top:7px" onclick="viewClientReferencePhoto('${store.id}',${i})">📷 Ver foto</button>`:'';
+      return `<div class="store-card brand-movement" style="--store-color:${color}"><div class="row"><div><strong>${label}</strong><div class="mini-note">${dt(m.createdAt)}${m.description?` • ${escapeHtml(m.description)}`:''}</div>${photo}</div><div class="${charge?'positive':'negative'}">${charge?'+':'−'} ${money(m.amount)}</div></div></div>`;
+    }).join(''):'<div class="empty">Sem movimentações.</div>'}`;
+};
+renderClientApp=function(){
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected);
+  if(!c)return;
+  document.getElementById('previewName').textContent=c.name.split(' ')[0];
+  const stores=getClientStores(c),total=stores.reduce((s,x)=>s+Math.max(x.balance||0,0),0);
+  document.getElementById('previewTotal').textContent=money(total);
+  const totalLabel=document.querySelector('.client-head div[style*="margin-top:10px"]');
+  if(totalLabel)totalLabel.textContent='MEU FIADO';
+  if(!selectedClientStoreId||!stores.some(s=>s.id===selectedClientStoreId))selectedClientStoreId=stores[0]?.id||null;
+  document.getElementById('previewStoreList').innerHTML=stores.map(store=>{
+    const note='Conta no Põe na Conta',color=themeColor(store.theme),tint=themeRgba(store.theme,.055);
+    return `<button class="customer-store brand-card" style="--store-color:${color};--store-tint:${tint};border-left-color:${color};background:${tint}" type="button" onclick="selectClientStore('${store.id}')"><div class="store-ident">${clientStoreLogoHtml(store)}<div><strong>${escapeHtml(store.name)}</strong><div class="mini-note">${note}</div></div></div><div class="right"><div class="money">${balanceHtml(store.balance||0)}</div><small style="color:${color};font-weight:800">ver conta ›</small></div></button>`;
+  }).join('');
+  renderClientReferences();setClientView(clientViewMode);
+};
+renderClientReferences=function(){
+  const body=document.getElementById('clientReferencesBody');if(!body)return;
+  const select=document.getElementById('clientPreviewSelect'),c=getClient(select.value)||data.clients.find(x=>x.connected);
+  if(!c){body.innerHTML='<tr><td colspan="5"><div class="empty">Nenhum cliente conectado selecionado.</div></td></tr>';return}
+  const q=document.getElementById('clientReferenceSearch')?.value||'',refs=[];
+  getClientStores(c).forEach(store=>{(store.movements||[]).forEach((m,i)=>{if(m.type==='charge'&&((m.description||'').trim()||m.photo)&&(!q.trim()||fuzzyMatch(m.description||'',q)))refs.push({store,m,i})})});
+  refs.sort((a,b)=>new Date(b.m.createdAt)-new Date(a.m.createdAt));
+  body.innerHTML=refs.length?refs.map(({store,m,i})=>{
+    const desc=(m.description||'').trim()?escapeHtml(m.description):'<span class="mini-note">Sem descrição</span>',
+      photo=m.photo?`<div class="photo-actions"><img class="ref-photo" src="${m.photo}" alt="Foto da anotação"><button class="btn btn-light btn-small" onclick="viewClientReferencePhoto('${store.id}',${i})">Ver foto</button></div>`:'<span class="mini-note">Sem foto</span>',
+      logo=store.logo?`<img src="${store.logo}" alt="Logo de ${escapeHtml(store.name)}">`:initials(store.name),color=themeColor(store.theme);
+    return `<tr><td>${dt(m.createdAt)}</td><td><div class="client-store-ident"><div class="store-logo" style="background:${color}">${logo}</div><strong>${escapeHtml(store.name)}</strong></div></td><td>${desc}</td><td>${photo}</td><td class="right"><strong>${money(m.amount)}</strong></td></tr>`;
+  }).join(''):'<tr><td colspan="5"><div class="empty">Nenhuma referência encontrada nas suas contas.</div></td></tr>';
+};
+/* ===== fim patch v0.12 ===== */
+
+
+/* ===== PÕE NA CONTA v0.17 — CLIENTES E MOVIMENTAÇÕES ONLINE ===== */
+let onlineDataBusy=false;
+
+function setOnlineChip(label='● Online'){
+  const chip=document.getElementById('syncChip');
+  if(chip) chip.textContent=label;
+}
+function serverMoneyToCents(value){
+  const n=Number(value||0);
+  return Number.isFinite(n)?Math.round(n*100):0;
+}
+function centsToServerMoney(cents){
+  return Number((Number(cents||0)/100).toFixed(2));
+}
+function mapServerClient(row){
+  const reason=(row.blocked_reason||'').toLowerCase();
+  return {
+    id:row.id,
+    name:row.name||'Cliente',
+    nickname:row.nickname||'',
+    phone:row.phone||'',
+    connected:!!row.customer_user_id,
+    customerUserId:row.customer_user_id||null,
+    inviteStatus:row.invite_status||(row.customer_user_id?'accepted':'none'),
+    limitMode:row.limit_mode||'free',
+    limit:row.credit_limit==null?null:serverMoneyToCents(row.credit_limit),
+    manualBlocked:!!row.blocked && reason!=='limit',
+    autoBlocked:!!row.blocked && reason==='limit',
+    blocked:!!row.blocked,
+    blockedReason:row.blocked_reason||null,
+    dueDay:Number(row.due_day||5),
+    openingMode:'zero',
+    createdBy:row.created_by||null,
+    createdAt:row.created_at||null,
+    updatedAt:row.updated_at||null
+  };
+}
+function mapServerMovement(row,photoCache={}){
+  const type=row.type||'charge';
+  let note='';
+  if(type==='payment') note=row.payment_method||'';
+  if(type==='reversal') note=row.reference||'';
+  const ref=type==='reversal'?(row.reversed_movement_id||null):(row.reference||null);
+  return {
+    id:row.id,
+    clientId:row.client_id,
+    type,
+    amount:serverMoneyToCents(row.amount),
+    createdAt:row.created_at||new Date().toISOString(),
+    user:row.created_by===onlineContext.userId?(data.currentUser?.name||'Usuário'):'Usuário',
+    ref,
+    note,
+    description:row.description||'',
+    photo:photoCache[row.id]||null,
+    status:'active',
+    openingDirection:type==='opening'?(row.direction==='credit'?'credit':'debt'):undefined,
+    direction:row.direction||null,
+    createdBy:row.created_by||null,
+    attachmentPath:row.attachment_path||null
+  };
+}
+async function loadOperationalDataOnline(showToast=false){
+  if(!sbClient||!onlineContext.establishmentId) return false;
+  if(onlineDataBusy) return false;
+  onlineDataBusy=true;
+  setOnlineChip('● Sincronizando');
+  const photoCache={};
+  (data.movements||[]).forEach(m=>{if(m.id&&m.photo)photoCache[m.id]=m.photo});
+  try{
+    const [clientsResult,movementsResult]=await Promise.all([
+      sbClient.from('clients')
+        .select('id,establishment_id,name,nickname,phone,customer_user_id,limit_mode,credit_limit,blocked,blocked_reason,due_day,invite_status,created_by,created_at,updated_at')
+        .eq('establishment_id',onlineContext.establishmentId)
+        .order('name',{ascending:true}),
+      sbClient.from('movements')
+        .select('id,establishment_id,client_id,type,direction,amount,description,payment_method,reference,attachment_path,reversed_movement_id,created_by,created_at')
+        .eq('establishment_id',onlineContext.establishmentId)
+        .order('created_at',{ascending:true})
+    ]);
+    if(clientsResult.error) throw clientsResult.error;
+    if(movementsResult.error) throw movementsResult.error;
+    data.clients=(clientsResult.data||[]).map(mapServerClient);
+    data.movements=(movementsResult.data||[]).map(r=>mapServerMovement(r,photoCache));
+    data.clients.forEach(c=>{
+      if(data.movements.some(m=>m.clientId===c.id&&m.type==='opening')) c.openingMode='informed';
+      else c.openingMode='zero';
+    });
+    reevaluateAllAutoBlocks(false);
+    if(data.selectedClientId&&!getClient(data.selectedClientId))data.selectedClientId=null;
+    save();
+    setOnlineChip('● Online');
+    if(showToast)notify('Dados atualizados do servidor.');
+    return true;
+  }catch(error){
+    console.error('Falha ao carregar dados online',error);
+    setOnlineChip('● Erro de conexão');
+    if(showToast)notify('Não foi possível atualizar os dados. Verifique a internet.');
+    return false;
+  }finally{
+    onlineDataBusy=false;
+  }
+}
+async function refreshOnlineData(){
+  const ok=await loadOperationalDataOnline(true);
+  if(ok){renderAll();selectQuick(data.selectedClientId||null)}
+}
+async function loadMerchantContext(session){
+  if(!sbClient||!session){showAuthPanel('authLoginPanel');return}
+  showAuthPanel('authLoadingPanel');
+  const {data:userData,error:userError}=await sbClient.auth.getUser();
+  const user=userData?.user;
+  if(userError||!user){showAuthPanel('authLoginPanel');return}
+
+  const [profileResult,membershipResult]=await Promise.all([
+    sbClient.from('profiles').select('display_name,phone').eq('user_id',user.id).maybeSingle(),
+    sbClient.from('establishment_users').select('establishment_id,role,status').eq('user_id',user.id).limit(1)
+  ]);
+  if(profileResult.error){document.getElementById('authErrorText').textContent='Seu login foi reconhecido, mas não foi possível carregar seu perfil.';showAuthPanel('authErrorPanel');return}
+  if(membershipResult.error){document.getElementById('authErrorText').textContent='Seu login foi reconhecido, mas não foi possível validar o vínculo com o estabelecimento.';showAuthPanel('authErrorPanel');return}
+  const membership=(membershipResult.data||[])[0];
+  if(!membership){document.getElementById('authPendingMeta').innerHTML=`<strong>${escapeHtml(user.email||'Usuário')}</strong><br>O administrador precisa vincular este login a um estabelecimento.`;showAuthPanel('authPendingPanel');return}
+  if(membership.status!=='active'){document.getElementById('authBlockedText').textContent='Este usuário está bloqueado para acessar o estabelecimento.';showAuthPanel('authBlockedPanel');return}
+
+  const {data:establishment,error:estError}=await sbClient.from('establishments')
+    .select('id,code,business_name,responsible_name,phone,status,theme,logo_url')
+    .eq('id',membership.establishment_id).maybeSingle();
+  if(estError||!establishment){document.getElementById('authErrorText').textContent='Não foi possível carregar os dados do estabelecimento vinculado.';showAuthPanel('authErrorPanel');return}
+  if(establishment.status==='blocked'){document.getElementById('authBlockedText').textContent=`${establishment.business_name} está bloqueado no Põe na Conta.`;showAuthPanel('authBlockedPanel');return}
+
+  onlineContext={userId:user.id,email:user.email||null,establishmentId:establishment.id,establishmentCode:establishment.code||null,establishmentStatus:establishment.status,role:membership.role};
+  STORE_KEY=STORE_KEY_BASE+':'+establishment.id;
+  data=load();migrateData();
+  data.store.id=establishment.id;data.store.name=establishment.business_name;data.store.theme=establishment.theme||data.store.theme||'teal';
+  if(establishment.logo_url)data.store.logo=establishment.logo_url;
+  const fallbackName=(user.email||'usuario').split('@')[0];
+  data.currentUser={id:user.id,name:profileResult.data?.display_name||establishment.responsible_name||fallbackName,role:authRoleLabel(membership.role)};
+
+  const operationalOk=await loadOperationalDataOnline(false);
+  if(!operationalOk){
+    document.getElementById('authErrorText').textContent='Seu acesso está correto, mas não foi possível carregar clientes e movimentações do servidor. Verifique a internet e tente novamente.';
+    showAuthPanel('authErrorPanel');return;
+  }
+  save();renderAll();
+  const app=document.getElementById('merchantApp');if(app)app.classList.add('auth-ready');
+  const gate=document.getElementById('authGate');if(gate)gate.style.display='none';
+}
+
+async function createMovementOnline(clientId,type,amount,note='',ref=null,description='',extra={}){
+  if(!sbClient||!onlineContext.establishmentId||!onlineContext.userId){
+    alert('Sem conexão confirmada com o servidor.');
+    return null;
+  }
+  const c=getClient(clientId);
+  if(!c){notify('Cliente não encontrado.');return null}
+
+  const id=(crypto.randomUUID?crypto.randomUUID():('00000000-0000-4000-8000-'+Date.now().toString().padStart(12,'0').slice(-12)));
+  const direction=(type==='charge'||type==='opening')?'debit':'credit';
+  const payload={
+    id,
+    establishment_id:onlineContext.establishmentId,
+    client_id:clientId,
+    type,
+    direction,
+    amount:centsToServerMoney(amount),
+    description:description||null,
+    payment_method:type==='payment'?(note||null):null,
+    reference:type==='reversal'?(note||null):(ref&&type!=='reversal'?String(ref):null),
+    attachment_path:null,
+    reversed_movement_id:type==='reversal'&&ref?ref:null,
+    created_by:onlineContext.userId
+  };
+
+  setOnlineChip('● Salvando');
+  const {error}=await sbClient.from('movements').insert(payload);
+
+  if(error){
+    console.error('Erro Supabase ao salvar movimentação:',error);
+    setOnlineChip('● Erro ao salvar');
+    alert('A movimentação NÃO foi gravada no servidor.\n\nErro do Supabase: '+(error.message||error.code||'erro não identificado'));
+    return null;
+  }
+
+  const m=mapServerMovement({...payload,created_at:new Date().toISOString()},{});
+  m.photo=extra.photo||null;
+  data.movements=data.movements.filter(x=>x.id!==id);
+  data.movements.push(m);
+
+  const action=type==='charge'?'LANÇAMENTO':type==='payment'?'PAGAMENTO':type==='opening'?'SALDO DE ABERTURA':'ESTORNO';
+  addAudit(action,`${money(amount)} • ${c.name}${description?` • ${description}`:''}${ref?` • referência ${ref}`:''}`);
+  reevaluateAutoBlock(c,true);
+  save();
+  renderAll();
+  setOnlineChip('● Online');
+  return m;
+}
+
+function whatsappPhone(raw){
+  let digits=String(raw||'').replace(/\D/g,'');
+  if(!digits)return '';
+  // Piloto Brasil: se foi informado DDD + número, acrescenta o código do país.
+  if(digits.length===10||digits.length===11)digits='55'+digits;
+  return digits;
+}
+function whatsappBalanceLine(value){
+  if(value>0)return `🔴 *Saldo em Fiado: ${money(value)}*`;
+  if(value<0)return `🔵 *Saldo Em haver: ${money(Math.abs(value))}*`;
+  return `🟢 *Conta quitada*`;
+}
+function whatsappMessage(c,type,amount,newBalance,description='',note=''){
+  const store=(data.store?.name||'Estabelecimento').trim();
+  const lines=[];
+  if(type==='charge'){
+    lines.push(`🧾 *${store}*`);
+    lines.push(`Foi lançado *${money(amount)}* na sua conta.`);
+    if(description)lines.push(`Referência: ${description}`);
+    lines.push('');
+    lines.push(whatsappBalanceLine(newBalance));
+  }else{
+    lines.push(`💰 *${store}*`);
+    lines.push(`Pagamento recebido: *${money(amount)}* ✅`);
+    if(note)lines.push(`Forma: ${note}`);
+    lines.push('');
+    lines.push(whatsappBalanceLine(newBalance));
+  }
+  lines.push('');
+  lines.push('_Põe na Conta_');
+  return lines.join('\n');
+}
+function sendWhatsApp(clientId,type,amount,newBalance,description='',note=''){
+  const c=getClient(clientId);
+  if(!c)return;
+  const phone=whatsappPhone(c.phone);
+  if(!phone)return;
+  const msg=whatsappMessage(c,type,Number(amount)||0,Number(newBalance)||0,description||'',note||'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank','noopener,noreferrer');
+}
+function whatsappButtonHtml(c,type,amount,newBalance,description='',note=''){
+  if(!whatsappPhone(c?.phone))return '';
+  const d=encodeURIComponent(description||'');
+  const n=encodeURIComponent(note||'');
+  return `<div class="whatsapp-action"><button class="btn-whatsapp" type="button" onclick="sendWhatsApp('${c.id}','${type}',${Number(amount)||0},${Number(newBalance)||0},decodeURIComponent('${d}'),decodeURIComponent('${n}'))">📲 Enviar WhatsApp</button></div>`;
+}
+function showActionSuccess(c,type,amount,newBalance,description='',note=''){
+  const body=document.querySelector('#actionModal .modal-body');
+  const footer=document.querySelector('#actionModal .modal-footer');
+  const title=document.getElementById('actionTitle');
+  if(title)title.textContent=type==='charge'?'Lançamento confirmado':'Pagamento confirmado';
+  if(body){
+    body.innerHTML=`
+      <div class="reversal-success">
+        <div class="icon">${type==='charge'?'🧾':'💰'}</div>
+        <h3>${type==='charge'?'Lançamento salvo':'Pagamento recebido'}</h3>
+        <div class="amount">${money(amount)}</div>
+        <p><strong>${escapeHtml(c.name)}</strong></p>
+        <p>${escapeHtml(balanceText(newBalance))}</p>
+        ${description?`<p>Referência: ${escapeHtml(description)}</p>`:''}
+        ${note?`<p>Forma: ${escapeHtml(note)}</p>`:''}
+        ${whatsappButtonHtml(c,type,amount,newBalance,description,note)}
+      </div>`;
+  }
+  if(footer)footer.innerHTML=`<button class="btn btn-light" type="button" onclick="closeModal('actionModal')">Fechar</button>`;
+}
+async function quickAdd(){
+  if(quickLock)return;
+  const c=getClient(data.selectedClientId),amount=parseMoneyInput(document.getElementById('quickAmount').value),description=(document.getElementById('quickDescription').value||'').trim(),btn=document.getElementById('quickAddBtn');
+  if(!c){notify('Selecione um cliente.');return}if(isBlocked(c)){notify('Crédito bloqueado para este cliente.');return}if(amount<=0){notify('Informe um valor.');return}
+  const before=balance(c.id),capacity=chargeCapacity(c);
+  if(capacity!==null&&amount>capacity){if(!confirm(`Este lançamento fará o saldo devedor ultrapassar o limite do fiado de ${money(c.limit)}. Autorizar mesmo assim como proprietário?`))return;addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do limite do fiado.`)}
+  quickLock=true;btn.disabled=true;btn.style.opacity='.85';btn.textContent='SALVANDO...';
+  const hadPhoto=!!quickPendingPhoto;
+  const movement=await createMovementOnline(c.id,'charge',amount,'',null,description,{photo:quickPendingPhoto});
+  if(!movement){quickLock=false;btn.disabled=false;btn.style.opacity='1';btn.textContent='PÕE NA CONTA';return}
+  const after=balance(c.id),conf=document.getElementById('quickConfirmation');
+  conf.innerHTML=`<div class="confirm-title">✓ LANÇAMENTO CONFIRMADO</div><div class="confirm-main">${escapeHtml(c.name)} — ${money(amount)}</div><div class="confirm-meta">Antes: ${balanceText(before)}<br><strong>Agora: ${balanceText(after)}</strong>${description?`<br>Descrição: ${escapeHtml(description)}`:''}${hadPhoto?'<br>📷 Foto salva neste aparelho':''}<br>${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} • ${escapeHtml(data.store.name)}</div>${whatsappButtonHtml(c,'charge',amount,after,description,'')}${hadPhoto?'':`<div style="margin-top:10px"><button class="btn btn-light btn-small" type="button" onclick="triggerMovementPhoto('${movement.id}')">📷 Adicionar foto agora</button></div>`}`;
+  conf.classList.add('show');btn.textContent=`✓ ${money(amount)} LANÇADO`;
+  const usage=limitUsage(c),threshold=Number(data.store.limitAlertPct||80);if(usage!==null&&usage>=threshold)notify(`Alerta interno: ${c.name} atingiu ${usage}% do limite.`);else notify('Lançamento salvo online.');
+  setTimeout(()=>{quickLock=false;data.selectedClientId=null;save();document.getElementById('quickAmount').value='';document.getElementById('quickDescription').value='';removeQuickPhoto();document.getElementById('quickSelected').innerHTML='<strong>Escolha um cliente</strong><span>Toque em um nome da lista abaixo.</span>';btn.disabled=false;btn.style.opacity='1';btn.textContent='PÕE NA CONTA';const receiveBtn=document.getElementById('quickReceiveBtn');if(receiveBtn)receiveBtn.disabled=true;renderQuickClients();},2200);
+}
+
+async function confirmAction(){
+  if(!actionState)return;
+  const c=getClient(actionState.clientId),amount=parseMoneyInput(document.getElementById('actionAmount').value),note=document.getElementById('actionNote').value.trim(),description=document.getElementById('actionDescription').value.trim();
+  if(amount<=0){notify('Informe um valor.');return}
+  if(actionState.type==='charge'){
+    if(isBlocked(c)){notify('Fiado bloqueado para este cliente.');return}
+    const cap=chargeCapacity(c);
+    if(cap!==null&&amount>cap){
+      if(!confirm(`Este lançamento passa do limite do fiado de ${money(c.limit)}.\n\nAutorizar mesmo assim?`))return;
+      addAudit('EXCEÇÃO DE LIMITE',`${c.name}: proprietário autorizou ${money(amount)} acima do limite do fiado.`);
+    }
+  }else{
+    const b=balance(c.id),after=b-amount;
+    if(after<0){
+      const fiadoAtual=Math.max(b,0),haver=Math.abs(after);
+      if(!confirm(`O pagamento é maior que o fiado de ${c.name}.\n\nFiado atual: ${money(fiadoAtual)}\nPagamento: ${money(amount)}\n${c.name} ficará com ${money(haver)} em haver.\n\nConfirmar pagamento?`))return;
+    }
+  }
+
+  const was=actionState.type;
+  const movement=await createMovementOnline(c.id,was,amount,note,null,was==='charge'?description:'');
+  if(!movement)return;
+
+  const newBalance=balance(c.id);
+  notify(was==='charge'?'Lançamento salvo online.':`Pagamento salvo online. ${balanceText(newBalance)}.`);
+  actionState=null;
+
+  // O WhatsApp é somente um gatilho posterior: a transação já foi salva.
+  showActionSuccess(c,was,amount,newBalance,was==='charge'?description:'',was==='payment'?note:'');
+}
+
+async function confirmReversal(){
+  if(!reversalState)return;
+  const m=data.movements.find(x=>x.id===reversalState.movementId);if(!m)return;
+  if(data.movements.some(x=>x.type==='reversal'&&x.ref===m.id&&x.status==='active')){notify('Este lançamento já foi estornado.');closeModal('reversalModal');reversalState=null;return}
+  const reason=(document.getElementById('reversalReason')?.value||'').trim();if(!reason){notify('Informe o motivo do estorno.');document.getElementById('reversalReason')?.focus();return}
+  const c=getClient(m.clientId),before=balance(c.id);
+  const reversal=await createMovementOnline(m.clientId,'reversal',m.amount,reason,m.id);
+  if(!reversal)return;
+  const after=balance(c.id);addAudit('ESTORNO CONFIRMADO',`${c.name}: ${money(m.amount)} estornado. Motivo: ${reason}. Lançamento original: ${m.id}.`);
+  document.getElementById('reversalModalTitle').textContent='Estorno concluído';document.getElementById('reversalModalSubtitle').textContent='A operação foi registrada online e vinculada ao lançamento original.';
+  document.getElementById('reversalModalBody').innerHTML=`<div class="reversal-success"><div class="icon">✅</div><h3>ESTORNO REALIZADO</h3><div class="amount">${money(m.amount)}</div><p><strong>${escapeHtml(c.name)}</strong></p><p>Antes: ${balanceText(before)}</p><p><strong>Agora: ${balanceText(after)}</strong></p><p>Lançamento original: ${m.id}</p><p>Motivo: ${escapeHtml(reason)}</p></div><div class="info-strip">O lançamento original continua visível no histórico, junto com este estorno.</div>`;
+  document.getElementById('reversalModalFooter').innerHTML='<button class="btn btn-primary" onclick="finishReversal()">Fechar</button>';reversalState=null;save();renderAll();
+}
+
+async function saveNewClientOnlineV0171(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){notify('Informe o nome.');return}
+
+  if(!sbClient||!onlineContext.establishmentId||!onlineContext.userId){
+    alert('Não foi possível confirmar a conexão com o servidor. Saia e entre novamente no Põe na Conta.');
+    return;
+  }
+
+  const mode=document.getElementById('newLimitMode').value;
+  const limit=mode==='fixed'?parseMoneyInput(document.getElementById('newLimit').value):null;
+  if(mode==='fixed'&&limit<=0){notify('Informe o limite do fiado.');return}
+
+  const openingBalance=parseMoneyInput(document.getElementById('newOpeningBalance').value);
+  const id=(crypto.randomUUID?crypto.randomUUID():('00000000-0000-4000-8000-'+Date.now().toString().padStart(12,'0').slice(-12)));
+
+  const payload={
+    id,
+    establishment_id:onlineContext.establishmentId,
+    name,
+    nickname:document.getElementById('newNickname').value.trim()||null,
+    phone:document.getElementById('newPhone').value.trim()||null,
+    customer_user_id:null,
+    limit_mode:mode,
+    credit_limit:mode==='fixed'?centsToServerMoney(limit):null,
+    blocked:false,
+    blocked_reason:null,
+    due_day:5,
+    invite_status:'none',
+    created_by:onlineContext.userId
+  };
+
+  setOnlineChip('● Salvando');
+  const {error}=await sbClient.from('clients').insert(payload);
+
+  if(error){
+    console.error('Erro Supabase ao cadastrar cliente:',error);
+    setOnlineChip('● Erro ao salvar');
+    alert('O cliente NÃO foi gravado no servidor.\n\nErro do Supabase: '+(error.message||error.code||'erro não identificado'));
+    return;
+  }
+
+  // Só entra na tela depois que o INSERT foi aceito pelo servidor.
+  const now=new Date().toISOString();
+  const c=mapServerClient({...payload,created_at:now,updated_at:now});
+  data.clients=data.clients.filter(x=>x.id!==id);
+  data.clients.push(c);
+  save();
+  renderAll();
+
+  if(openingBalance>0){
+    const opening=await createMovementOnline(c.id,'opening',openingBalance,'Saldo devedor inicial informado no cadastro',null,'');
+    if(opening)c.openingMode='informed';
+    else alert('O cliente foi criado no servidor, mas o saldo inicial não foi confirmado. Faça o lançamento depois pela conta do cliente.');
+  }
+
+  addAudit('CLIENTE CRIADO',`${c.name} • sem app • ${c.limitMode==='free'?'sem limite':'limite do fiado '+money(c.limit)}${openingBalance>0?' • saldo inicial '+money(openingBalance):''}.`);
+  save();
+  renderAll();
+  closeModal('newClientModal');
+
+  ['newName','newNickname','newPhone','newLimit','newOpeningBalance'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value='';
+  });
+  document.getElementById('newLimitMode').value='free';
+  toggleNewLimit();
+  setOnlineChip('● Online');
+  notify(`${c.name} cadastrado no servidor.`);
+}
+async function toggleBlock(id){
+  const c=getClient(id);if(!c)return;const newValue=!c.manualBlocked;
+  const {error}=await sbClient.from('clients').update({blocked:newValue,blocked_reason:newValue?'manual':null}).eq('id',id).eq('establishment_id',onlineContext.establishmentId);
+  if(error){console.error(error);notify('Não foi possível alterar o bloqueio no servidor.');return}
+  c.manualBlocked=newValue;c.blocked=newValue;c.blockedReason=newValue?'manual':null;addAudit(newValue?'BLOQUEIO MANUAL':'DESBLOQUEIO MANUAL',`${c.name}: crédito ${newValue?'bloqueado':'desbloqueado'} manualmente.`);save();renderAll();closeModal('clientModal');notify(`Fiado de ${c.name} ${newValue?'bloqueado':'desbloqueado'}.`);
+}
+
+async function editLimit(id){
+  const c=getClient(id);if(!c)return;const current=c.limitMode==='free'?'livre':(c.limit/100).toFixed(2).replace('.',','),v=prompt(`Digite o novo limite em reais ou escreva "livre".\nAtual: ${current}`,current);if(v===null)return;
+  const old=c.limitMode==='free'?'livre':money(c.limit);let mode='fixed',limit=null;if(v.trim().toLowerCase()==='livre'){mode='free';limit=null}else{limit=parseMoneyInput(v);if(limit<=0){notify('Limite inválido.');return}}
+  const {error}=await sbClient.from('clients').update({limit_mode:mode,credit_limit:mode==='free'?null:centsToServerMoney(limit)}).eq('id',id).eq('establishment_id',onlineContext.establishmentId);
+  if(error){console.error(error);notify('Não foi possível atualizar o limite no servidor.');return}
+  c.limitMode=mode;c.limit=limit;reevaluateAutoBlock(c,true);addAudit('ALTERAÇÃO DE LIMITE',`${c.name}: ${old} → ${c.limitMode==='free'?'livre':money(c.limit)}.`);save();renderAll();closeModal('clientModal');notify('Limite atualizado online.');
+}
+
+async function deleteClient(id){
+  const c=getClient(id);if(!c){notify('Cliente não encontrado.');return}
+  const b=balance(id),movementCount=data.movements.filter(m=>m.clientId===id).length;let balanceWarning='Este cliente está sem saldo pendente.';if(b>0)balanceWarning=`⚠ ATENÇÃO: ${c.name} tem ${money(b)} em FIADO.`;if(b<0)balanceWarning=`⚠ ATENÇÃO: ${c.name} tem ${money(-b)} EM HAVER.`;
+  const message=`Deseja realmente excluir ${c.name}?\n\n${balanceWarning}\n\nExistem ${movementCount} movimentação(ões) vinculada(s). O servidor só concluirá a exclusão se as regras de integridade permitirem. Esta ação não pode ser desfeita.`;if(!confirm(message))return;
+  const {error}=await sbClient.from('clients').delete().eq('id',id).eq('establishment_id',onlineContext.establishmentId);
+  if(error){console.error(error);notify('Este cliente não pôde ser excluído. Se possui histórico financeiro, mantenha o cadastro e use o bloqueio.');return}
+  const balanceSummary=b>0?`${money(b)} em fiado`:b<0?`${money(-b)} em haver`:'sem saldo pendente';addAudit('CLIENTE EXCLUÍDO',`${c.name} • ${balanceSummary}.`);
+  await loadOperationalDataOnline(false);if(data.clientExternalStores&&Object.prototype.hasOwnProperty.call(data.clientExternalStores,id))delete data.clientExternalStores[id];data.selectedClientId=null;actionState=null;save();closeModal('clientModal');renderAll();selectQuick(null);notify(`${c.name} foi excluído.`);
+}
+
+// Fotos continuam como referência local nesta etapa; o movimento financeiro já está online.
+function handleMovementPhoto(event){
+  const file=event.target.files&&event.target.files[0];if(!file||!photoTargetMovementId)return;if(!file.type.startsWith('image/')){notify('Selecione uma imagem.');return}
+  const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);const m=data.movements.find(x=>x.id===photoTargetMovementId);if(!m)return;m.photo=canvas.toDataURL('image/jpeg',.72);addAudit('FOTO ANEXADA',`${getClient(m.clientId)?.name||'Cliente'}: foto de referência anexada localmente ao lançamento ${m.id}.`);save();renderAll();const conf=document.getElementById('quickConfirmation');if(conf&&conf.classList.contains('show')){const btn=conf.querySelector('button');if(btn){btn.textContent='✓ Foto anexada';btn.disabled=true}}notify('Foto anexada neste aparelho. O lançamento financeiro já está online.');photoTargetMovementId=null};img.src=reader.result};reader.readAsDataURL(file);
+}
+/* ===== fim v0.17 ===== */
+
+
+upgradeDataV07();
+renderAll();
+if(data.selectedClientId)selectQuick(data.selectedClientId);
+initOnlineAccess();
+
+console.info('Põe na Conta — build v0.17.2 — WhatsApp assistido');
+window.__PNC_BUILD = '0.17.2';
+</script>
+
+</body>
+</html>
