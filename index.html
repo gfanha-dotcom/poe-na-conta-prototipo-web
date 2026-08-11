@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Põe na Conta — v0.16.1 • Comerciante</title>
+<title>Põe na Conta — v0.16.2 • Comerciante</title>
 <style>
   :root{
     --bg:#f4f6f8;
@@ -274,7 +274,7 @@
 
 
 
-  /* ===== v0.16.1 — interface limpa do comerciante ===== */
+  /* ===== v0.16.2 — interface limpa + menu compacto ===== */
   .online-chip{
     color:#067647;
     background:#ecfdf3;
@@ -333,11 +333,22 @@
       padding-top:12px;
     }
     .nav{
-      margin-bottom:12px;
+      gap:5px;
+      margin-bottom:10px;
+      padding-bottom:3px;
+      scrollbar-width:thin;
+    }
+    .nav button{
+      padding:7px 10px;
+      min-height:34px;
+      border-radius:10px;
+      font-size:12.5px;
+      line-height:1.05;
+      font-weight:800;
     }
   }
 
-  /* ===== v0.16.1 — Acesso Online / Supabase Auth ===== */
+  /* ===== v0.16.2 — Acesso Online / Supabase Auth ===== */
   .app{display:none}
   .app.auth-ready{display:block}
   .auth-gate{
@@ -422,7 +433,7 @@
 </style>
 </head>
 <body>
-<!-- Põe na Conta v0.16.1 — Comerciante • interface limpa -->
+<!-- Põe na Conta v0.16.2 — Comerciante • menu compacto -->
 
 <div class="auth-gate" id="authGate">
   <div class="auth-card">
@@ -551,7 +562,7 @@
       </div>
 
       <input id="quickAmount" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" />
-      <input id="quickDescription" class="quick-desc" maxlength="120" placeholder="Descrição (opcional) — ex.: Natura, 3 cervejas" />
+      <input id="quickDescription" class="quick-desc" maxlength="120" placeholder="Descrição (opcional) — ex.: Produto tal, serviço tal" />
       <div class="quick-photo-area">
         <button class="quick-photo-btn" id="quickPhotoBtn" type="button" onclick="triggerQuickPhoto()">📷 FOTO DA ANOTAÇÃO <span style="font-weight:650;opacity:.85">(opcional)</span></button>
         <div class="quick-photo-preview" id="quickPhotoPreview">
@@ -849,7 +860,7 @@
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-row span-2"><label>Valor</label><input id="actionAmount" inputmode="decimal" placeholder="R$ 0,00" oninput="formatMoneyInput(this)" /></div>
-        <div class="form-row span-2" id="actionDescriptionRow"><label>Descrição do lançamento (opcional)</label><input id="actionDescription" maxlength="120" placeholder="Ex.: Natura, material, 3 cervejas" /></div>
+        <div class="form-row span-2" id="actionDescriptionRow"><label>Descrição do lançamento (opcional)</label><input id="actionDescription" maxlength="120" placeholder="Ex.: Produto tal, serviço tal" /></div>
         <div class="form-row span-2" id="actionNoteRow"><label>Como pagou? (opcional)</label><input id="actionNote" placeholder="Ex.: Pix, dinheiro, cartão" /></div>
       </div>
     </div>
