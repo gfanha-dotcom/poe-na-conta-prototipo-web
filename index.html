@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Põe na Conta — Protótipo v0.16 — Acesso Online • Comerciante</title>
+<title>Põe na Conta — v0.16.1 • Comerciante</title>
 <style>
   :root{
     --bg:#f4f6f8;
@@ -273,7 +273,71 @@
   .brand-note{font-size:11px;opacity:.9;margin-top:3px}
 
 
-  /* ===== v0.16 — Acesso Online / Supabase Auth ===== */
+
+  /* ===== v0.16.1 — interface limpa do comerciante ===== */
+  .online-chip{
+    color:#067647;
+    background:#ecfdf3;
+    border-color:#abefc6;
+    font-weight:800;
+  }
+  @media(max-width:620px){
+    .topbar{
+      align-items:center;
+      padding:10px 12px;
+      gap:8px;
+    }
+    .brand{
+      min-width:0;
+      gap:9px;
+      flex:1;
+    }
+    .logo,.brand-logo-img{
+      width:40px!important;
+      height:40px!important;
+      border-radius:12px!important;
+      flex:0 0 40px;
+    }
+    .brand>div:last-child{
+      min-width:0;
+    }
+    .brand h1{
+      font-size:17px;
+      white-space:nowrap;
+    }
+    .brand small{
+      margin-top:3px;
+      font-size:12px;
+      max-width:150px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .top-actions{
+      flex:0 0 auto;
+      gap:6px;
+      flex-wrap:nowrap;
+    }
+    #profileChip{
+      max-width:190px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      padding:8px 10px;
+      font-size:12px;
+    }
+    #syncChip{
+      display:none;
+    }
+    .container{
+      padding-top:12px;
+    }
+    .nav{
+      margin-bottom:12px;
+    }
+  }
+
+  /* ===== v0.16.1 — Acesso Online / Supabase Auth ===== */
   .app{display:none}
   .app.auth-ready{display:block}
   .auth-gate{
@@ -358,7 +422,7 @@
 </style>
 </head>
 <body>
-<!-- Põe na Conta v0.16 — Acesso Online • Comerciante -->
+<!-- Põe na Conta v0.16.1 — Comerciante • interface limpa -->
 
 <div class="auth-gate" id="authGate">
   <div class="auth-card">
@@ -366,7 +430,7 @@
       <div class="auth-logo">PC</div>
       <div>
         <h1>Põe na Conta</h1>
-        <p>v0.16 • Acesso do comerciante</p>
+        <p>Acesso do comerciante</p>
       </div>
     </div>
 
@@ -441,7 +505,7 @@
     </div>
 
     <div class="auth-footer">
-      Acesso controlado • Põe na Conta • Protótipo online
+      Acesso seguro • Põe na Conta
     </div>
   </div>
 </div>
@@ -453,20 +517,18 @@
       <div class="logo" id="brandLogoFallback">PC</div><img id="brandLogoImg" class="brand-logo-img" alt="Logo do estabelecimento">
       <div>
         <h1>Põe na Conta</h1>
-        <small id="storeName">Põe na Conta • v0.16 • Acesso Online</small>
+        <small id="storeName">Meu negócio</small>
       </div>
     </div>
     <div class="top-actions">
       <button class="chip" id="privacyBtn" onclick="togglePrivacy()" style="cursor:pointer">👁 Ocultar saldos</button>
       <button class="chip" id="profileChip" type="button" onclick="openProfileModal()" style="cursor:pointer">👤 Usuário • Comerciante ▾</button>
-      <span class="chip" id="syncChip">● Aguardando login</span>
+      <span class="chip online-chip" id="syncChip">● Online</span>
     </div>
   </div>
 </header>
 
 <div class="container">
-  <div class="notice"><strong>Protótipo v0.16 • Acesso Online.</strong> O login, o usuário e o estabelecimento são validados no Supabase. Nesta etapa de transição, clientes e movimentações ainda ficam salvos localmente neste navegador enquanto validamos autenticação, vínculo e isolamento entre comerciantes. A v0.15.1 permanece preservada.</div>
-
   <div class="nav">
     <button class="active" data-view="dashboard">Põe na Conta</button>
     <button data-view="finance">Financeiro</button>
@@ -738,7 +800,7 @@
         <button class="btn btn-light" onclick="exportDemo()">Exportar base demonstrativa</button>
         <button class="btn btn-danger" onclick="resetDemo()">Restaurar dados fictícios</button>
       </div>
-      <div class="mini-note">Na v0.16, login e vínculo do estabelecimento já usam o servidor. Clientes, movimentações, fotos e a base operacional ainda permanecem locais nesta etapa de teste. Isso ainda NÃO representa o backup final do produto.</div>
+      <div class="mini-note">Login e vínculo do estabelecimento já usam o servidor. Nesta etapa de teste, clientes, movimentações, fotos e a base operacional ainda permanecem neste aparelho. O backup online da operação será ativado na próxima etapa.</div>
     </div>
 
     <div class="card card-pad" style="margin-top:16px">
@@ -956,7 +1018,7 @@ async function requestPasswordReset(){
     return;
   }
   if(location.protocol==='file:'){
-    setAuthMessage('authLoginMessage','A recuperação de senha será ativada depois que esta v0.16 estiver hospedada.','info');
+    setAuthMessage('authLoginMessage','A recuperação de senha só funciona pela versão online do Põe na Conta.','info');
     return;
   }
 
@@ -1247,9 +1309,7 @@ function save(){
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
   const chip=document.getElementById('syncChip');
   if(chip){
-    chip.textContent=onlineContext.userId
-      ? '● Login online • dados piloto locais'
-      : '● Dados piloto locais';
+    chip.textContent=onlineContext.userId ? '● Online' : '● Offline';
   }
 }
 function money(cents){
@@ -1347,11 +1407,11 @@ function applyStoreBranding(){
   document.documentElement.style.setProperty('--primary',t.primary);
   document.documentElement.style.setProperty('--primary-2',t.primary2);
   const storeName=document.getElementById('storeName');
-  if(storeName) storeName.textContent=`${data.store.name} • Protótipo v0.16 • Online`;
+  if(storeName) storeName.textContent=data.store.name;
   const profileChip=document.getElementById('profileChip');
   if(profileChip) profileChip.textContent=`👤 ${data.currentUser?.name||'Usuário'} • ${data.currentUser?.role||'Comerciante'} ▾`;
   const syncChip=document.getElementById('syncChip');
-  if(syncChip) syncChip.textContent=onlineContext.userId?'● Login online • dados piloto locais':'● Aguardando login';
+  if(syncChip) syncChip.textContent=onlineContext.userId?'● Online':'● Offline';
   const fallback=document.getElementById('brandLogoFallback');
   const img=document.getElementById('brandLogoImg');
   if(data.store.logo){
@@ -2455,7 +2515,7 @@ function openProfileModal(){
         <div class="mini-note">Nome do negócio que os clientes verão${onlineContext.establishmentCode?` • ${escapeHtml(onlineContext.establishmentCode)}`:''}</div>
       </div>
     </div>
-    <div class="info-strip">Login e estabelecimento são validados online. Nesta v0.16, a base financeira ainda é local enquanto concluímos os testes de acesso.</div>
+    <div class="info-strip">Seu acesso e estabelecimento são validados online. Os dados financeiros ainda permanecem neste aparelho nesta etapa de teste.</div>
     <div style="margin-top:14px">
       <button class="btn btn-danger" style="width:100%" type="button" onclick="logoutOnline()">Sair da conta</button>
     </div>`;
