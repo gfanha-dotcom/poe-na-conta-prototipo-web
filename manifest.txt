@@ -1,0 +1,24 @@
+{
+  "name": "Põe na Conta",
+  "short_name": "Põe na Conta",
+  "description": "Controle simples do fiado.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#073f43",
+  "icons": [
+    {
+      "src": "poe-na-conta-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "poe-na-conta-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
